@@ -290,10 +290,10 @@ fun hasDifferentDigits(n: Int): Boolean{
     var number = n
     if (n == 0) return true
     while (number != 0){
-        if (number % 10 != last) return false
+        if (number % 10 != last) return true
         number /= 10
     }
-    return true
+    return false
 }
 
 /**
