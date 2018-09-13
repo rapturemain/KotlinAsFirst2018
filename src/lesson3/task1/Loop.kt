@@ -267,7 +267,7 @@ fun revert(n: Int): Int{
     var swap = 0
     var count = digitNumber(n)
     for (i in 1..count){
-        swap += power(10,( count - i + 1 )) * ( number % 10 )
+        swap += power(10,( count - i )) * ( number % 10 )
         number /= 10
     }
     return swap
@@ -282,7 +282,7 @@ fun revert(n: Int): Int{
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun isPalindrome(n: Int): Boolean = ( n == revent(n) )
+fun isPalindrome(n: Int): Boolean = ( n == revert(n) )
 
 /**
  * Средняя
