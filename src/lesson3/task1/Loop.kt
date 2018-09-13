@@ -70,6 +70,7 @@ fun digitCountInNumber(n: Int, m: Int): Int =
 fun digitNumber(n: Int): Int{
     var sum = 0
     var number = n
+    if (n == 0) return 1
     while (number != 0){
         number/= 10
         sum++
@@ -87,7 +88,7 @@ fun fib(n: Int): Int {
     when (n) {
         1 -> return 1
         2 -> return 1
-        else -> fib(n - 2) + fib(n - 1)
+        else -> return fib(n - 2) + fib(n - 1)
     }
     return -1
 }
@@ -247,7 +248,7 @@ fun revert(n: Int): Int{
     var swap = 0
     var count = digitNumber(n)
     for (i in 1..count){
-        swap += ( count - i + 1 ) * ( number % 10 )
+        swap += (Math.pow(10.0,( count - i + 1 ).toDouble()) * ( number % 10 )).toInt()
         number /= 10
     }
     return swap
