@@ -81,7 +81,7 @@ fun daysInMonth(month: Int, year: Int): Int{
  */
 fun circleInside(x1: Double, y1: Double, r1: Double,
                  x2: Double, y2: Double, r2: Double): Boolean{
-    if (r1>=r2) return false else
+    if (r1>r2) return false else
     return pointInsideCircle(x1, y1, x2, y2, r2-r1)
 }
 
