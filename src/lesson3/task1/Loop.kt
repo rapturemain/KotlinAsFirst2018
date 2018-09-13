@@ -69,8 +69,9 @@ fun digitCountInNumber(n: Int, m: Int): Int =
  */
 fun digitNumber(n: Int): Int{
     var sum = 0
-    while (n != 0){
-        n / 10
+    var number = n
+    while (number != 0){
+        number/= 10
         sum++
     }
     return sum
@@ -82,12 +83,14 @@ fun digitNumber(n: Int): Int{
  * Найти число Фибоначчи из ряда 1, 1, 2, 3, 5, 8, 13, 21, ... с номером n.
  * Ряд Фибоначчи определён следующим образом: fib(1) = 1, fib(2) = 1, fib(n+2) = fib(n) + fib(n+1)
  */
-fun fib(n: Int): Int =
-    when (n){
-        1 -> 1
-        2 -> 1
-        else -> fib(n-2) + fib(n-1)
+fun fib(n: Int): Int {
+    when (n) {
+        1 -> return 1
+        2 -> return 1
+        else -> fib(n - 2) + fib(n - 1)
     }
+    return -1
+}
 
 /**
  * Простая
@@ -194,14 +197,15 @@ fun collatzSteps(x: Int): Int {
  * Нужную точность считать достигнутой, если очередной член ряда меньше eps по модулю
  */
 fun sin(x: Double, eps: Double): Double{
-    var n = 9999999.0
+    var n: Double = 9999999.0
     var count = -1
     var realCount = 0
-    var buffer = 0.0
+    var buffer: Double = 0.0
     while (abs(n) >= eps){
         count += 2
         realCount++
-        n = Math.pow(x, count.toDouble())/ factorial(count)
+        n = Math.pow(x, count.toDouble())
+        n /= factorial(count)
         if (isEven(realCount)) buffer -= n else
             buffer += n
     }
@@ -216,14 +220,15 @@ fun sin(x: Double, eps: Double): Double{
  * Нужную точность считать достигнутой, если очередной член ряда меньше eps по модулю
  */
 fun cos(x: Double, eps: Double): Double {
-    var n = 9999999.0
+    var n: Double = 9999999.0
     var count = 0
     var realCount = 1
-    var buffer = 1.0
+    var buffer: Double = 1.0
     while (abs(n) >= eps){
         count += 2
         realCount++
-        n = Math.pow(x, count.toDouble())/ factorial(count)
+        n = Math.pow(x, count.toDouble())
+        n /= factorial(count)
         if (isEven(realCount)) buffer -= n else
             buffer += n
     }
@@ -237,7 +242,16 @@ fun cos(x: Double, eps: Double): Double {
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun revert(n: Int): Int = TODO()
+fun revert(n: Int): Int{
+    var number = n
+    var swap = 0
+    var count = digitNumber(n)
+    for (i in 1..count){
+        swap += ( count - i + 1 ) * ( number % 10 )
+        number /= 10
+    }
+    return swap
+}
 
 /**
  * Средняя
