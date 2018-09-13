@@ -2,6 +2,7 @@
 package lesson2.task2
 
 import lesson1.task1.sqr
+import kotlin.math.abs
 import kotlin.system.measureTimeMillis
 
 /**
@@ -35,7 +36,7 @@ fun isUnder(kingX: Int, kingY: Int,
             rookX: Int, rookY: Int): Boolean {
     var under = false
     if ((kingX == rookX)||(kingY == rookY)) under = true
-    if (kingX-rookX == kingY - rookY) under = true
+    if (abs(kingX-rookX) == abs(kingY - rookY)) under = true
     return under
 }
 
@@ -65,7 +66,7 @@ fun daysInMonth(month: Int, year: Int): Int{
         12 -> return 31
     }
     if (month == 2){
-        if ((year % 4 == 0)&&(year % 100 != 0)) return 29 else
+        if ((year % 4 == 0)&&((year % 100 != 0)||(year % 400 == 0))) return 29 else
             return 28
     }
     return -2

@@ -2,6 +2,7 @@
 package lesson2.task1
 
 import lesson1.task1.discriminant
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.sqrt
 import kotlin.system.measureTimeMillis
@@ -131,7 +132,7 @@ fun rookOrBishopThreatens(kingX: Int, kingY: Int,
                           bishopX: Int, bishopY: Int): Int {
     var under = 0
     if ((kingX == rookX)||(kingY == rookY)) under += 1
-    if (kingX-bishopX == kingY - bishopY) under += 2
+    if (abs(kingX-bishopX) == abs(kingY - bishopY)) under += 2
     return under
 }
 
@@ -166,7 +167,7 @@ fun triangleKind(a: Double, b: Double, c: Double): Int {
     if (max >= first + second) return -1
     var angle = -( max - sqr(first) - sqr(second) ) / ( first * second )
     if (angle == 0.0) return 1 else
-        if (angle < 0) return 0 else
+        if (angle > 0) return 0 else
             return 2
 }
 
@@ -179,15 +180,15 @@ fun triangleKind(a: Double, b: Double, c: Double): Int {
  * Если пересечения нет, вернуть -1.
  */
 fun segmentLength(a: Int, b: Int, c: Int, d: Int): Int {
-    if (a >= c) return -1
-    if (c >= b) return -1
-    if (b > c) {
-        if (d > b) {
+    if (a > d) return -1
+    if (c > b) return -1
+    if (b >= c) {
+        if (d >= b) {
             return b - c
         } else return d - c
     }
-    if (a > c) {
-        if (b > d) {
+    if (a >= c) {
+        if (b >= d) {
             return d - a
         } else return b - a
     }
