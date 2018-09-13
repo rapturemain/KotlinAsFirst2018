@@ -94,7 +94,6 @@ fun fib(n: Int): Int {
     if (n == 1) return 1 else
         if (n == 2) return 1 else
             return fib(n-2)+fib(n-1)
-    return -1
 }
 
 /**
@@ -191,7 +190,7 @@ fun collatzSteps2(x: Int, count: Int): Int {
 }
 
 fun collatzSteps(x: Int): Int {
-    return collatzSteps2(x, 0);
+    return collatzSteps2(x, 0)
 }
 
 /**
