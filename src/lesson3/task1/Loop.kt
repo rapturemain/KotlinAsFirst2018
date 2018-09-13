@@ -263,7 +263,7 @@ fun revert(n: Int): Int{
     var swap = 0
     var count = digitNumber(n)
     for (i in 1..count){
-        swap += power(10,( count - i + 1 )) * ( number % 10 ))
+        swap += power(10,( count - i + 2 )) * ( number % 10 )
         number /= 10
     }
     return swap
