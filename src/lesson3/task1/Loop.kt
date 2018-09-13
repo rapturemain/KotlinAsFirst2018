@@ -75,12 +75,6 @@ fun digitNumber(n: Int): Int{
         number/= 10
         sum++
     }
-    number = n
-    if (number % 10 == 0) {
-        var count = 1
-        while (number % power(10, count) == 0) count++
-        sum += count
-    }
     return sum
 }
 
