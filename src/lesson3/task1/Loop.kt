@@ -75,10 +75,12 @@ fun digitNumber(n: Int): Int{
         number/= 10
         sum++
     }
-    var count = 1
-    number = n
-    while (number % power(10, count) == 0) count++
-    sum += count
+    if (number % 10 == 0) {
+        var count = 1
+        number = n
+        while (number % power(10, count) == 0) count++
+        sum += count
+    }
     return sum
 }
 
@@ -89,11 +91,9 @@ fun digitNumber(n: Int): Int{
  * Ряд Фибоначчи определён следующим образом: fib(1) = 1, fib(2) = 1, fib(n+2) = fib(n) + fib(n+1)
  */
 fun fib(n: Int): Int {
-    when (n) {
-        1 -> return 1
-        2 -> return 1
-        else -> return fib(n - 2) + fib(n - 1)
-    }
+    if (n == 1) return 1 else
+        if (n == 2) return 1 else
+            return fib(n-2)+fib(n-1)
     return -1
 }
 
@@ -282,7 +282,7 @@ fun revert(n: Int): Int{
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun isPalindrome(n: Int): Boolean = TODO()
+fun isPalindrome(n: Int): Boolean = ( n == revent(n) )
 
 /**
  * Средняя
@@ -292,7 +292,16 @@ fun isPalindrome(n: Int): Boolean = TODO()
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun hasDifferentDigits(n: Int): Boolean = TODO()
+fun hasDifferentDigits(n: Int): Boolean{
+    val last = n % 10
+    var number = n
+    if (n == 0) return true
+    while (number != 0){
+        if (number % 10 != last) return false
+        number /= 10
+    }
+    return true
+}
 
 /**
  * Сложная
