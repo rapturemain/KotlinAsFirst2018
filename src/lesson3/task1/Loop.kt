@@ -197,15 +197,30 @@ fun collatzSteps(x: Int): Int {
  * sin(x) = x - x^3 / 3! + x^5 / 5! - x^7 / 7! + ...
  * Нужную точность считать достигнутой, если очередной член ряда меньше eps по модулю
  */
+fun power(n: Double, count:Int):Double{
+    if (n == 0.0) return 0.0
+    var buffer:Double = 1.0
+    for (i in 1..count) buffer *= n
+    return buffer
+}
+
+fun power(n: Int, count:Int):Int{
+    if (n == 0) return 0
+    var buffer:Int = 1
+    for (i in 1..count) buffer *= n
+    return buffer
+}
+
+
 fun sin(x: Double, eps: Double): Double{
     var n: Double = 9999999.0
     var count = -1
     var realCount = 0
     var buffer: Double = 0.0
-    while (abs(n) >= eps){
+    while (n >= eps){
         count += 2
         realCount++
-        n = Math.pow(x, count.toDouble())
+        n = power(x, count)
         n /= factorial(count)
         if (isEven(realCount)) buffer -= n else
             buffer += n
@@ -225,10 +240,10 @@ fun cos(x: Double, eps: Double): Double {
     var count = 0
     var realCount = 1
     var buffer: Double = 1.0
-    while (abs(n) >= eps){
+    while (n >= eps){
         count += 2
         realCount++
-        n = Math.pow(x, count.toDouble())
+        n = power(x, count)
         n /= factorial(count)
         if (isEven(realCount)) buffer -= n else
             buffer += n
@@ -248,7 +263,7 @@ fun revert(n: Int): Int{
     var swap = 0
     var count = digitNumber(n)
     for (i in 1..count){
-        swap += (Math.pow(10.0,( count - i + 1 ).toDouble()) * ( number % 10 )).toInt()
+        swap += power(10,( count - i + 1 )) * ( number % 10 ))
         number /= 10
     }
     return swap
