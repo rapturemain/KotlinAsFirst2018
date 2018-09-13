@@ -35,7 +35,7 @@ fun isUnder(kingX: Int, kingY: Int,
             rookX: Int, rookY: Int): Boolean {
     var under = false
     if ((kingX == rookX)||(kingY == rookY)) under = true
-    if ((kingX/1.0/kingY == rookX/1.0/rookY)||(kingX/1.0/kingY == -rookX/1.0/rookY)) under = true
+    if (kingX-rookX == kingY - rookY) under = true
     return under
 }
 
@@ -65,7 +65,7 @@ fun daysInMonth(month: Int, year: Int): Int{
         12 -> return 31
     }
     if (month == 2){
-        if (year % 4 == 0) return 29 else
+        if ((year % 4 == 0)&&(year % 100 != 0)) return 29 else
             return 28
     }
     return -2
@@ -80,8 +80,8 @@ fun daysInMonth(month: Int, year: Int): Int{
  */
 fun circleInside(x1: Double, y1: Double, r1: Double,
                  x2: Double, y2: Double, r2: Double): Boolean{
-    if (r2>=r1) return false else
-    return pointInsideCircle(x1, y1, x2, y2, r1-r2)
+    if (r1>=r2) return false else
+    return pointInsideCircle(x2, y2, x1, y1, r2-r1)
 }
 
 /**
@@ -93,31 +93,31 @@ fun circleInside(x1: Double, y1: Double, r1: Double,
  * кирпич 4 х 4 х 4 пройдёт через отверстие 4 х 4.
  * Вернуть true, если кирпич пройдёт
  */
-fun maximum(a: Int, b: Int):Int{
+fun minimum(a: Int, b: Int):Int{
     if (a < b) return a else
         return b
 }
 
-fun minimum(a: Int, b: Int):Int{
+fun maximum(a: Int, b: Int):Int{
     if (a > b) return a else
         return b
 }
 
 fun brickPasses(a: Int, b: Int, c: Int, r: Int, s: Int): Boolean{
-    val max: Int /** это меньшая сторона */
+    val min: Int
     val first: Int
-    if ((c < a)&&(c < b)) {
-        max = c
-        first = maximum(a,b)
+    if ((c <= a)&&(c <= b)) {
+        min = c
+        first = minimum(a,b)
     } else
-        if ((b < a)&&(b < c)) {
-            max = b
-            first = maximum(a,c)
+        if ((b <= a)&&(b <= c)) {
+            min= b
+            first = minimum(a,c)
         } else {
-            max = a
-            first = maximum(b,c)
+            min = a
+            first = minimum(b,c)
         };
-    val wallFirst = maximum(r,s)
-    val wallSecond = minimum(r,s)
-    return ((max <= wallFirst)&&(first <= wallSecond))
+    val wallFirst = minimum(r,s)
+    val wallSecond = maximum(r,s)
+    return ((min <= wallFirst)&&(first <= wallSecond))
 }

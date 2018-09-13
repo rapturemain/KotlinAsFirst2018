@@ -70,6 +70,7 @@ fun ageDescription(ageB: Int): String {
     } else {
         age %= 10
         if (age == 0) return "$ageB лет" else
+            if (age == 1) return "$ageB год" else
             if (age > 4) return "$ageB лет" else
                 return "$ageB года"
     }
@@ -86,13 +87,13 @@ fun timeForHalfWay(t1: Double, v1: Double,
                    t2: Double, v2: Double,
                    t3: Double, v3: Double): Double {
     val halfWay = ( v1 * t1 + v2 * t2 + v3 * t3 ) / 2.0
-    if (v1 * t1 > halfWay) {
+    if (v1 * t1 >= halfWay) {
         return halfWay / v1
     } else {
-        if (v1 * t1 + v2 * t2 > halfWay) {
-            return (halfWay - v1 * t1) / v2
+        if (v1 * t1 + v2 * t2 >= halfWay) {
+            return t1 + (halfWay - v1 * t1) / v2
         } else {
-            return (halfWay - v1 * t1 - v2 * t2) / v3
+            return t1 + t2 +(halfWay - v1 * t1 - v2 * t2) / v3
         }
     }
 }
@@ -130,7 +131,7 @@ fun rookOrBishopThreatens(kingX: Int, kingY: Int,
                           bishopX: Int, bishopY: Int): Int {
     var under = 0
     if ((kingX == rookX)||(kingY == rookY)) under += 1
-    if ((kingX/1.0/kingY == bishopX/1.0/bishopY)||(kingX/1.0/kingY == -bishopX/1.0/bishopY)) under += 2
+    if (kingX-bishopX == kingY - bishopY) under += 2
     return under
 }
 
@@ -162,7 +163,7 @@ fun triangleKind(a: Double, b: Double, c: Double): Int {
             first = b
             second = c
         };
-    if (max >= a + b) return -1
+    if (max >= first + second) return -1
     var angle = -( max - sqr(first) - sqr(second) ) / ( first * second )
     if (angle == 0.0) return 1 else
         if (angle < 0) return 0 else
@@ -178,8 +179,8 @@ fun triangleKind(a: Double, b: Double, c: Double): Int {
  * Если пересечения нет, вернуть -1.
  */
 fun segmentLength(a: Int, b: Int, c: Int, d: Int): Int {
-    if (a > c) return -1
-    if (c > b) return -1
+    if (a >= c) return -1
+    if (c >= b) return -1
     if (b > c) {
         if (d > b) {
             return b - c
