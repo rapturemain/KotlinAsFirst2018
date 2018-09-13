@@ -75,6 +75,10 @@ fun digitNumber(n: Int): Int{
         number/= 10
         sum++
     }
+    var count = 1
+    number = n
+    while (number % power(10, count) == 0) count++
+    sum += count
     return sum
 }
 
@@ -217,7 +221,7 @@ fun sin(x: Double, eps: Double): Double{
     var count = -1
     var realCount = 0
     var buffer: Double = 0.0
-    while (n >= eps){
+    while (abs(n) >= eps){
         count += 2
         realCount++
         n = power(x, count)
@@ -240,7 +244,7 @@ fun cos(x: Double, eps: Double): Double {
     var count = 0
     var realCount = 1
     var buffer: Double = 1.0
-    while (n >= eps){
+    while (abs(n) >= eps){
         count += 2
         realCount++
         n = power(x, count)
@@ -263,7 +267,7 @@ fun revert(n: Int): Int{
     var swap = 0
     var count = digitNumber(n)
     for (i in 1..count){
-        swap += power(10,( count - i + 2 )) * ( number % 10 )
+        swap += power(10,( count - i + 1 )) * ( number % 10 )
         number /= 10
     }
     return swap
