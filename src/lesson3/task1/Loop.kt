@@ -81,7 +81,7 @@ fun digitNumber(n: Int): Int{
         while (number % power(10, count) == 0) count++
         sum += count
     }
-    return sum-1
+    return sum
 }
 
 /**
