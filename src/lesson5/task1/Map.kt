@@ -2,6 +2,8 @@
 
 package lesson5.task1
 
+import lesson4.task1.reventListString
+
 /**
  * Пример
  *
@@ -13,7 +15,6 @@ fun shoppingListCost(
         shoppingList: List<String>,
         costs: Map<String, Double>): Double {
     var totalCost = 0.0
-
     for (item in shoppingList) {
         val itemCost = costs[item]
         if (itemCost != null) {
@@ -94,7 +95,44 @@ fun buildWordSet(text: List<String>): MutableSet<String> {
  *     mapOf("Emergency" to "911", "Police" to "02")
  *   ) -> mapOf("Emergency" to "112, 911", "Police" to "02")
  */
-fun mergePhoneBooks(mapA: Map<String, String>, mapB: Map<String, String>): Map<String, String> = TODO()
+fun isIn(list:MutableList<String>, value: String):Boolean{
+    for (i in 0..list.size - 1){
+        if (list[i] == value) return true
+    }
+    return false
+}
+
+fun mergePhoneBooks(mapA: Map<String, String>, mapB: Map<String, String>): Map<String, String>{
+    var buffer = mutableMapOf<String, String>()
+    var bufferNumber = mutableListOf<String>()
+    var bufferService = ""
+    var bufferNumberString = ""
+    for ((serviceA, numberA) in mapA){
+        bufferService = serviceA
+        bufferNumber.clear()
+        bufferNumber.add(numberA)
+        bufferNumberString = ""
+        for ((serviceB, numberB) in mapB){
+            if (serviceB == bufferService)
+                if (!isIn(bufferNumber, numberB)) bufferNumber.add(numberB)
+        }
+        for (i in 0..bufferNumber.size - 2){
+            bufferNumberString += bufferNumber[i] + ", "
+        }
+        bufferNumberString += bufferNumber[bufferNumber.size - 1]
+        buffer.put(bufferService, bufferNumberString)
+    }
+    var boolean = false
+    for ((serviceB, numberB) in mapB){
+        boolean = false
+        for ((serviceA, numberA) in mapA){
+            if (serviceA==serviceB) boolean = true
+        }
+        if (!boolean)
+        buffer.put(serviceB, numberB)
+    }
+    return buffer
+}
 
 /**
  * Простая
@@ -106,7 +144,72 @@ fun mergePhoneBooks(mapA: Map<String, String>, mapB: Map<String, String>): Map<S
  *   buildGrades(mapOf("Марат" to 3, "Семён" to 5, "Михаил" to 5))
  *     -> mapOf(5 to listOf("Семён", "Михаил"), 3 to listOf("Марат"))
  */
-fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> = TODO()
+fun swap(list: MutableList<String>, lo: Int, hi: Int):MutableList<String>{
+    val left = list[lo]
+    list[lo] = list[hi]
+    list[hi] = left
+    return list
+}
+
+fun isAlphabit(left: String, right: String): Boolean{
+    var i = 0
+    while (left[i] == right[i]){
+        i++
+        if ((i>left.length - 1)&&(i>right.length - 1)) return true
+        if (i>right.length - 1) return true
+        if (i>left.length - 1) return false
+    }
+    return (left[i] < right[i])
+}
+
+fun sortListOfString(list: MutableList<String>, l: Int, h: Int):MutableList<String>{
+    if (l == h) return list
+    if (h - l == 1) if (!isAlphabit(list[l],list[h])) return swap(list,l,h) else return list
+    var base = list[l]
+    var lo = l
+    var hi = h
+    var buffer = mutableListOf<String>()
+    buffer = list
+    while (lo < hi){
+        while ((isAlphabit(list[lo], base))&&(lo < hi)) lo++
+        while ((isAlphabit(base, list[hi]))&&(lo < hi)) hi--
+        if (lo != hi) {
+            buffer = swap(buffer, lo, hi)
+            lo++
+            hi--
+        }
+    }
+    swap(buffer, l, lo)
+    if (l < hi) buffer = sortListOfString(buffer, l, hi)
+    if (h > lo) buffer = sortListOfString(buffer, lo, h)
+    return buffer
+}
+
+fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>>{
+    var list2 = mutableListOf<String>()
+    var list3 = mutableListOf<String>()
+    var list4 = mutableListOf<String>()
+    var list5 = mutableListOf<String>()
+    var mark = 0
+    var buffer = mutableMapOf<Int, List<String>>()
+    for ((name, grade) in grades){
+        when (grade){
+            2 -> list2.add(name)
+            3 -> list3.add(name)
+            4 -> list4.add(name)
+            5 -> list5.add(name)
+        }
+    }
+    if (!list5.isEmpty()) list5 = sortListOfString(list5, 0, list5.size - 1)
+    if (!list4.isEmpty()) list4 = sortListOfString(list4, 0, list4.size - 1)
+    if (!list3.isEmpty()) list3 = sortListOfString(list3, 0, list3.size - 1)
+    if (!list2.isEmpty()) list2 = sortListOfString(list2, 0, list2.size - 1)
+    if (!list5.isEmpty()) buffer.put(5, reventListString(list5))
+    if (!list4.isEmpty()) buffer.put(4, reventListString(list4))
+    if (!list3.isEmpty()) buffer.put(3, reventListString(list3))
+    if (!list2.isEmpty()) buffer.put(2, reventListString(list2))
+    return buffer
+}
 
 /**
  * Простая
