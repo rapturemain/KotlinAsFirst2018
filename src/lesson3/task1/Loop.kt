@@ -1,6 +1,7 @@
 @file:Suppress("UNUSED_PARAMETER")
 package lesson3.task1
 
+import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.sqrt
 
@@ -87,7 +88,16 @@ fun digitNumber(n: Int): Int{
 fun fib(n: Int): Int {
     if (n == 1) return 1 else
         if (n == 2) return 1 else
-            return fib(n-2)+fib(n-1)
+            if (n == 3) return 2 else {
+            var list = mutableListOf<Int>()
+            list.add(1)
+            list.add(2)
+            for (i in 4..n-1) {
+                if (isEven(i)) list[0] += list[1] else
+                    list[1] += list[0]
+            }
+            return list[0]+list[1]
+        }
 }
 
 /**
@@ -196,6 +206,7 @@ fun collatzSteps(x: Int): Int {
  */
 fun power(n: Double, count:Int):Double{
     if (n == 0.0) return 0.0
+    if (count == 0) return 1.0
     var buffer:Double = 1.0
     for (i in 1..count) buffer *= n
     return buffer
@@ -203,6 +214,7 @@ fun power(n: Double, count:Int):Double{
 
 fun power(n: Int, count:Int):Int{
     if (n == 0) return 0
+    if (count == 0) return 1
     var buffer:Int = 1
     for (i in 1..count) buffer *= n
     return buffer
@@ -210,14 +222,17 @@ fun power(n: Int, count:Int):Int{
 
 
 fun sin(x: Double, eps: Double): Double{
-    var n: Double = 9999999.0
+    var n: Double = 99999.0
+    var xUp = x
+    if (x>2*PI) xUp = x - ((x / PI) / 2).toInt() * PI * 2
+    if (x<-2*PI) xUp = x + ((x / PI) / 2).toInt() * PI * 2
     var count = -1
     var realCount = 0
     var buffer: Double = 0.0
-    while (abs(n) >= eps){
+    while (abs(n) >= eps) {
         count += 2
         realCount++
-        n = power(x, count)
+        n = power(xUp, count)
         n /= factorial(count)
         if (isEven(realCount)) buffer -= n else
             buffer += n
@@ -234,13 +249,16 @@ fun sin(x: Double, eps: Double): Double{
  */
 fun cos(x: Double, eps: Double): Double {
     var n: Double = 9999999.0
+    var xUp = x
+    if (x>2*PI) xUp = x - ((x / PI) / 2).toInt() * PI * 2
+    if (x<-2*PI) xUp = x + ((x / PI) / 2).toInt() * PI * 2
     var count = 0
     var realCount = 1
     var buffer: Double = 1.0
     while (abs(n) >= eps){
         count += 2
         realCount++
-        n = power(x, count)
+        n = power(xUp, count)
         n /= factorial(count)
         if (isEven(realCount)) buffer -= n else
             buffer += n
@@ -305,7 +323,21 @@ fun hasDifferentDigits(n: Int): Boolean{
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun squareSequenceDigit(n: Int): Int = TODO()
+fun squareSequenceDigit(n: Int): Int{
+    var count = 0
+    var countNumber = 1
+    var sqrnum: Int = 0
+    while ( count < n ){
+        sqrnum = countNumber * countNumber
+        count += digitNumber(sqrnum)
+        countNumber++
+    }
+    count -= n - 1
+    if (count == 1) return sqrnum % 10 else {
+        for (i in 1..count - 1) sqrnum /= 10
+        return sqrnum % 10
+    }
+}
 
 /**
  * Сложная
@@ -316,4 +348,18 @@ fun squareSequenceDigit(n: Int): Int = TODO()
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun fibSequenceDigit(n: Int): Int = TODO()
+fun fibSequenceDigit(n: Int): Int{
+    var count = 0
+    var countNumber = 1
+    var sqrnum: Int = 0
+    while ( count < n ){
+        sqrnum = fib(countNumber)
+        count += digitNumber(sqrnum)
+        countNumber++
+    }
+    count -= n - 1
+    if (count == 1) return sqrnum % 10 else {
+        for (i in 1..count - 1) sqrnum /= 10
+        return sqrnum % 10
+    }
+}

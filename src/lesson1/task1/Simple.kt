@@ -1,6 +1,10 @@
 @file:Suppress("UNUSED_PARAMETER")
 package lesson1.task1
 
+import lesson3.task1.factorial
+import lesson3.task1.fib
+import lesson3.task1.isEven
+import lesson3.task1.power
 import kotlin.math.*
 
 /**
@@ -50,6 +54,7 @@ fun quadraticRootProduct(a: Double, b: Double, c: Double): Double {
 fun main(args: Array<String>) {
     val x1x2 = quadraticRootProduct(1.0, 13.0, 42.0)
     println("Root product: $x1x2")
+    println(fib(40))
 }
 
 /**
