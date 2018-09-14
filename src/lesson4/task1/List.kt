@@ -279,7 +279,7 @@ fun reventListString(list: MutableList<String>):MutableList<String>{
 fun convert(n: Int, base: Int): List<Int>{
     var number = n
     var list = mutableListOf<Int>()
-    while (number > base){
+    while (number >= base){
         list.add(number % base)
         number /= base
     }
@@ -416,7 +416,7 @@ fun russian(n: Int): String{
     sym.add("восемь")
     sym.add("девять")
     sym.add("десять")
-    sym.add("одиннадацать")
+    sym.add("одиннадцать")
     sym.add("двенадцать")
     sym.add("тринадцать")
     sym.add("четырнадцать")
