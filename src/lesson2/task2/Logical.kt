@@ -99,8 +99,8 @@ fun brickPasses(a: Int, b: Int, c: Int, r: Int, s: Int): Boolean {
             first = min(a, b)
         }
         (b <= a)&&(b <= c) -> {
-            min= b
-            first = max(a, c)
+            min = b
+            first = min(a, c)
         }
         else -> {
             min = a

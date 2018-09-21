@@ -73,7 +73,7 @@ fun ageDescription(ageB: Int): String =
         when (ageB % 10) {
             0 -> "$ageB лет"
             1 -> "$ageB год"
-            2, 3 -> "$ageB года"
+            2, 3, 4 -> "$ageB года"
             else -> "$ageB лет"
         }
     }
