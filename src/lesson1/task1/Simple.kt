@@ -5,6 +5,7 @@ import lesson3.task1.factorial
 import lesson3.task1.fib
 import lesson3.task1.isEven
 import kotlin.math.*
+import lesson3.task1.*
 
 /**
  * Пример
@@ -53,7 +54,9 @@ fun quadraticRootProduct(a: Double, b: Double, c: Double): Double {
 fun main(args: Array<String>) {
     val x1x2 = quadraticRootProduct(1.0, 13.0, 42.0)
     println("Root product: $x1x2")
-    println(fib(40))
+    println(cos(-18.832102629018816, 1e-10))
+    println(cos(-18.832102629018816))
+    println("0.9998476951604843")
 }
 
 /**

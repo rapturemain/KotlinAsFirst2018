@@ -232,18 +232,14 @@ fun sin(x: Double, eps: Double): Double {
 fun cos(x: Double, eps: Double): Double {
     var n = 1.0
     val xUp = x % (2 * PI)
-    var count = -2
-    var realCount = 1
-    var buffer = 0.0
-    while (abs(n) >= eps){
+    var count = 0
+    var buffer = 1.0
+    while (abs(n) >= eps) {
         count += 2
-        realCount++
-        if (realCount == 2) n = 1.0
-            else n *= xUp * xUp / (count * (count - 1))
-        if (isEven(realCount)) buffer += n
-            else buffer -= n
+        n *= xUp * xUp / (count * (count - 1)) * -1.0
+        buffer += n
     }
-    return realCount.toDouble()
+    return buffer
 }
 
 /**
