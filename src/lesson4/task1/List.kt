@@ -130,7 +130,7 @@ fun abs(v: List<Double>): Double = sqrt(v.fold(0.0) {
  */
 fun mean(list: List<Double>): Double =
     if (list.isEmpty()) 0.0
-        else list.sum() / list.size
+    else list.sum() / list.size
 
 
 /**
@@ -141,14 +141,12 @@ fun mean(list: List<Double>): Double =
  *
  * Обратите внимание, что данная функция должна изменять содержание списка list, а не его копии.
  */
-fun center(list: MutableList<Double>): MutableList<Double> =
-    if (list.isEmpty()) list
-        else {
+fun center(list: MutableList<Double>): MutableList<Double> {
         val average = mean(list)
         for (i in 0 until list.size) {
             list[i] -= average
         }
-        list
+       return  list
     }
 
 /**
@@ -255,13 +253,10 @@ fun convert(n: Int, base: Int): List<Int> {
  */
 fun convertToString(n: Int, base: Int): String {
     val list = convert(n, base)
-    var string = ""
-    for (element in list){
-        string += if (element>9) {
-            (element+87).toChar()
-        } else element
+    return list.joinToString("") {
+        it -> if (it > 9) (it + 87).toChar().toString()
+        else it.toString()
     }
-    return string
 }
 
 
@@ -292,11 +287,11 @@ fun decimal(digits: List<Int>, base: Int): Int {
 fun decimalFromString(str: String, base: Int): Int {
     var number = 0
     for ((index, element) in str.withIndex()) {
-        number += if (element.toInt() > 96){
-            ( element.toInt() - 87 ) * pow(base.toDouble(), (str.length - 1 - index).toDouble()).toInt()
-        } else {
-            ( element.toInt() - 48 ) * pow(base.toDouble(), (str.length - 1 - index).toDouble()).toInt()
-        }
+        number += if (element.toInt() > 96) {
+                  (element.toInt() - 87) * pow(base.toDouble(), (str.length - 1 - index).toDouble()).toInt()
+                  } else {
+                  (element.toInt() - 48) * pow(base.toDouble(), (str.length - 1 - index).toDouble()).toInt()
+                  }
     }
     return number
 }
@@ -312,14 +307,7 @@ fun decimalFromString(str: String, base: Int): Int {
 
 fun roman(n: Int): String {
     val list = mutableListOf<String>()
-    val sym = mutableListOf<String>()
-    sym.add("I")
-    sym.add("V")
-    sym.add("X")
-    sym.add("L")
-    sym.add("C")
-    sym.add("D")
-    sym.add("M")
+    val sym = mutableListOf("I", "V", "X", "L", "C", "D", "M")
     var count = 0
     var number = n
     while (count < 5){
@@ -351,61 +339,16 @@ fun roman(n: Int): String {
 
 fun russian(n: Int): String{
     val list = mutableListOf<String>()
-    val sym = mutableListOf<String>()
+    val sym = mutableListOf("", "один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять", "десять"
+            , "одиннадцать", "двенадцать", "тринадцать", "четырнадцать", "пятнадцать", "шестнадцать", "семнадцать"
+            , "восемнадцать", "девятнадцать", "двадцать", "тридцать", "сорок", "пятьдесят", "шестьдесят", "семьдесят"
+            , "восемьдесят", "девяносто", "", "сто", "двести", "триста", "четыреста", "пятьсот", "шестьсот", "семьсот"
+            , "восемьсот", "девятьсот", "тысяча", "тысячи", "тысяч", "", "одна", "две", "три", "четыре", "пять"
+            , "шесть", "семь", "восемь", "девять", "десять")
     val dec = 18
     val hun = 28
-    sym.add("")
-    sym.add("один") /** 1 */
-    sym.add("два")
-    sym.add("три")
-    sym.add("четыре")
-    sym.add("пять")
-    sym.add("шесть")
-    sym.add("семь")
-    sym.add("восемь")
-    sym.add("девять")
-    sym.add("десять")
-    sym.add("одиннадцать")
-    sym.add("двенадцать")
-    sym.add("тринадцать")
-    sym.add("четырнадцать")
-    sym.add("пятнадцать")
-    sym.add("шестнадцать")
-    sym.add("семнадцать")
-    sym.add("восемнадцать")
-    sym.add("девятнадцать")
-    sym.add("двадцать") /** 20 */
-    sym.add("тридцать")
-    sym.add("сорок")
-    sym.add("пятьдесят")
-    sym.add("шестьдесят")
-    sym.add("семьдесят")
-    sym.add("восемьдесят")
-    sym.add("девяносто")
-    sym.add("")
-    sym.add("сто") /** 29 */
-    sym.add("двести")
-    sym.add("триста")
-    sym.add("четыреста")
-    sym.add("пятьсот")
-    sym.add("шестьсот")
-    sym.add("семьсот")
-    sym.add("восемьсот")
-    sym.add("девятьсот")
-    sym.add("тысяча") /** 38 */
-    sym.add("тысячи")
-    sym.add("тысяч")
-    sym.add("")
-    sym.add("одна") /** 42 */
-    sym.add("две")
-    sym.add("три")
-    sym.add("четыре")
-    sym.add("пять")
-    sym.add("шесть")
-    sym.add("семь")
-    sym.add("восемь")
-    sym.add("девять")
-    sym.add("десять")
+    val tho = 38
+    val hundec = 41
     var number = n % 1000
     if ((number % 100)<20){
         list.add(sym[number % 100])
@@ -420,27 +363,27 @@ fun russian(n: Int): String{
     }
     number = n / 1000
     if (number > 0) {
-        if ((number % 100 > 4) && (number % 100 < 20)) {
-            list.add(sym[40])
+        if (number % 100 in 5..20) {
+            list.add(sym[tho + 2])
         } else
             when (number % 10) {
-                0 -> list.add(sym[40])
-                1 -> list.add(sym[38])
-                2 -> list.add(sym[39])
-                3 -> list.add(sym[39])
-                4 -> list.add(sym[39])
-                5 -> list.add(sym[40])
-                6 -> list.add(sym[40])
-                7 -> list.add(sym[40])
-                8 -> list.add(sym[40])
-                9 -> list.add(sym[40])
+                0 -> list.add(sym[tho + 2])
+                1 -> list.add(sym[tho])
+                2 -> list.add(sym[tho + 1])
+                3 -> list.add(sym[tho + 1])
+                4 -> list.add(sym[tho + 1])
+                5 -> list.add(sym[tho + 2])
+                6 -> list.add(sym[tho + 2])
+                7 -> list.add(sym[tho + 2])
+                8 -> list.add(sym[tho + 2])
+                9 -> list.add(sym[tho + 2])
             }
-        if ((number % 100 < 20)&&(number % 100 > 9)) {
+        if (number % 100 in 10..19) {
             list.add(sym[number % 100])
             list.add(sym[(number / 100) + hun])
         } else {
             number = n / 1000
-            list.add(sym[(number % 10) + 41])
+            list.add(sym[(number % 10) + hundec])
             number /= 10
             if (number % 10 != 0)
             list.add(sym[(number % 10) + dec])

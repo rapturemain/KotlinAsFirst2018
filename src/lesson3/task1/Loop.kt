@@ -94,7 +94,7 @@ fun fib(n: Int): Int {
     var n2 = 1
     for (i in 4..n){
         if (isEven(i)) n2 += n1
-            else n1 += n2
+        else n1 += n2
     }
     return if (isEven(n)) n2 else n1
 }
@@ -107,27 +107,28 @@ fun fib(n: Int): Int {
  */
 fun isEven (n: Int) = (n % 2 == 0)
 
-fun gcd(m: Int, n: Int): Int {
-    when (m) {
-        0 -> return n
-        1 -> return 1
-    }
-    when (n){
-        0 -> return m
-        1 -> return 1
-    }
-    return when {
-        m == n -> m
-        (isEven(m))&&(isEven(n)) -> 2*gcd(m/2, n/2)
-        (isEven(m))&&(!isEven(n)) -> gcd(m/2, n)
-        (!isEven(m))&&(isEven(n)) -> gcd(m, n/2)
-        (!isEven(m))&&(!isEven(n))&&(n > m) -> gcd((n-m)/2, m)
-        (!isEven(m))&&(!isEven(n))&&(n < m) -> gcd((m-n)/2, n)
-        else -> -1
-    }
-}
+fun gcd(m: Int, n: Int): Int =
+     when (m) {
+         0 -> n
+         1 -> 1
+         else ->
+             when (n) {
+                 0 -> m
+                 1 -> 1
+                 else ->
+                     when {
+                         m == n -> m
+                         (isEven(m)) && (isEven(n)) -> 2 * gcd(m / 2, n / 2)
+                         (isEven(m)) && (!isEven(n)) -> gcd(m / 2, n)
+                         (!isEven(m)) && (isEven(n)) -> gcd(m, n / 2)
+                         (!isEven(m)) && (!isEven(n)) && (n > m) -> gcd((n - m) / 2, m)
+                         (!isEven(m)) && (!isEven(n)) && (n < m) -> gcd((m - n) / 2, n)
+                         else -> -1
+                     }
+             }
+     }
 
-fun lcm(m: Int, n: Int): Int = abs(m*n) / gcd(m, n)
+fun lcm(m: Int, n: Int): Int = abs(m * n) / gcd(m, n)
 
 /**
  * Простая
@@ -189,13 +190,12 @@ fun squareBetweenExists(m: Int, n: Int): Boolean {
 fun collatzSteps2(x: Int, count: Int): Int =
         when {
             x == 1 -> count
-            isEven(x) -> collatzSteps2(x/2, count + 1)
-            else -> collatzSteps2(3*x+1, count + 1)
+            isEven(x) -> collatzSteps2(x / 2, count + 1)
+            else -> collatzSteps2(3 * x + 1, count + 1)
         }
 
-fun collatzSteps(x: Int): Int {
-    return collatzSteps2(x, 0)
-}
+fun collatzSteps(x: Int): Int =
+        collatzSteps2(x, 0)
 
 /**
  * Средняя
@@ -251,7 +251,7 @@ fun revert(n: Int): Int {
     var swap = 0
     val count = digitNumber(n)
     var power = pow(10.0, (count - 1).toDouble()).toInt()
-    for (i in 1..count){
+    for (i in 1..count) {
         swap += power * (number % 10)
         power /= 10
         number /= 10
@@ -268,7 +268,7 @@ fun revert(n: Int): Int {
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun isPalindrome(n: Int): Boolean = ( n == revert(n) )
+fun isPalindrome(n: Int): Boolean = (n == revert(n))
 
 /**
  * Средняя
@@ -297,20 +297,19 @@ fun hasDifferentDigits(n: Int): Boolean {
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
+fun findNumber(n: Int, nNum: Int) =
+        n / pow(10.0, nNum.toDouble() - 1.0).toInt() % 10
+
 fun squareSequenceDigit(n: Int): Int {
     var count = 0
     var countNumber = 1
     var sqrnum = 0
-    while ( count < n ){
+    while (count < n) {
         sqrnum = countNumber * countNumber
         count += digitNumber(sqrnum)
         countNumber++
     }
-    count -= n - 1
-    return if (count == 1) sqrnum % 10 else {
-        for (i in 1 until count) sqrnum /= 10
-        sqrnum % 10
-    }
+    return findNumber(sqrnum, count - n + 1)
 }
 
 /**
@@ -326,14 +325,10 @@ fun fibSequenceDigit(n: Int): Int {
     var count = 0
     var countNumber = 1
     var sqrnum = 0
-    while ( count < n ){
+    while (count < n) {
         sqrnum = fib(countNumber)
         count += digitNumber(sqrnum)
         countNumber++
     }
-    count -= n - 1
-    return if (count == 1) sqrnum % 10 else {
-        for (i in 1 until count) sqrnum /= 10
-        sqrnum % 10
-    }
+    return findNumber(sqrnum, count - n + 1)
 }

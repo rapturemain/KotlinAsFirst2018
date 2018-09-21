@@ -54,9 +54,6 @@ fun quadraticRootProduct(a: Double, b: Double, c: Double): Double {
 fun main(args: Array<String>) {
     val x1x2 = quadraticRootProduct(1.0, 13.0, 42.0)
     println("Root product: $x1x2")
-    println(cos(-18.832102629018816, 1e-10))
-    println(cos(-18.832102629018816))
-    println("0.9998476951604843")
 }
 
 /**
