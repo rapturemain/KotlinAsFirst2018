@@ -219,7 +219,7 @@ fun sin(x: Double, eps: Double): Double {
         if (isEven(realCount)) buffer -= n
             else buffer += n
     }
-    return buffer
+    return realCount.toDouble()
 }
 
 /**
@@ -243,7 +243,7 @@ fun cos(x: Double, eps: Double): Double {
         if (isEven(realCount)) buffer += n
             else buffer -= n
     }
-    return buffer
+    return realCount.toDouble()
 }
 
 /**
