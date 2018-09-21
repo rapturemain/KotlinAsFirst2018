@@ -4,6 +4,7 @@ package lesson2.task2
 import lesson1.task1.sqr
 import kotlin.math.abs
 import kotlin.system.measureTimeMillis
+import kotlin.math.*
 
 /**
  * Пример
@@ -20,8 +21,8 @@ fun pointInsideCircle(x: Double, y: Double, x0: Double, y0: Double, r: Double) =
  * Определить, счастливое ли заданное число, вернуть true, если это так.
  */
 fun isNumberHappy(number: Int): Boolean {
-    var first = number / 1000 + ( number / 100 ) % 10
-    var second = number % 10 + ( number % 100 ) / 10
+    val first = number / 1000 + ( number / 100 ) % 10
+    val second = number % 10 + ( number % 100 ) / 10
     return (first == second)
 }
 
@@ -35,14 +36,14 @@ fun isNumberHappy(number: Int): Boolean {
 fun isUnder(kingX: Int, kingY: Int,
             rookX: Int, rookY: Int): Boolean {
     var under = false
-    if ((kingX == rookX)||(kingY == rookY)) under = true
+    if ((kingX == rookX) || (kingY == rookY)) under = true
     if (abs(kingX-rookX) == abs(kingY - rookY)) under = true
     return under
 }
 
-fun queenThreatens(x1: Int, y1: Int, x2: Int, y2: Int): Boolean {
-    return isUnder(x1, y1, x2, y2)
-}
+fun queenThreatens(x1: Int, y1: Int, x2: Int, y2: Int): Boolean =
+    isUnder(x1, y1, x2, y2)
+
 
 
 /**
@@ -51,26 +52,21 @@ fun queenThreatens(x1: Int, y1: Int, x2: Int, y2: Int): Boolean {
  * Дан номер месяца (от 1 до 12 включительно) и год (положительный).
  * Вернуть число дней в этом месяце этого года по григорианскому календарю.
  */
-fun daysInMonth(month: Int, year: Int): Int{
-    when (month){
-        1 -> return 31
-        3 -> return 31
-        4 -> return 30
-        5 -> return 31
-        6 -> return 30
-        7 -> return 31
-        8 -> return 31
-        9 -> return 30
-        10 -> return 31
-        11 -> return  30
-        12 -> return 31
+fun daysInMonth(month: Int, year: Int): Int =
+    when (month) {
+        1 -> 31
+        3 -> 31
+        4 -> 30
+        5 -> 31
+        6 -> 30
+        7 -> 31
+        8 -> 31
+        9 -> 30
+        10 -> 31
+        11 -> 30
+        12 -> 31
+        else -> if (((year % 4 == 0) && ((year % 100 != 0) || (year % 400 == 0)))) 29 else 28
     }
-    if (month == 2){
-        if ((year % 4 == 0)&&((year % 100 != 0)||(year % 400 == 0))) return 29 else
-            return 28
-    }
-    return -2
-}
 
 /**
  * Средняя
@@ -80,10 +76,9 @@ fun daysInMonth(month: Int, year: Int): Int{
  * Вернуть true, если утверждение верно
  */
 fun circleInside(x1: Double, y1: Double, r1: Double,
-                 x2: Double, y2: Double, r2: Double): Boolean{
-    if (r1>r2) return false else
-    return pointInsideCircle(x1, y1, x2, y2, r2-r1)
-}
+                 x2: Double, y2: Double, r2: Double): Boolean =
+    if (r1>r2) false else
+    pointInsideCircle(x1, y1, x2, y2, r2-r1)
 
 /**
  * Средняя
@@ -94,31 +89,25 @@ fun circleInside(x1: Double, y1: Double, r1: Double,
  * кирпич 4 х 4 х 4 пройдёт через отверстие 4 х 4.
  * Вернуть true, если кирпич пройдёт
  */
-fun minimum(a: Int, b: Int):Int{
-    if (a < b) return a else
-        return b
-}
 
-fun maximum(a: Int, b: Int):Int{
-    if (a > b) return a else
-        return b
-}
-
-fun brickPasses(a: Int, b: Int, c: Int, r: Int, s: Int): Boolean{
+fun brickPasses(a: Int, b: Int, c: Int, r: Int, s: Int): Boolean {
     val min: Int
     val first: Int
-    if ((c <= a)&&(c <= b)) {
-        min = c
-        first = minimum(a,b)
-    } else
-        if ((b <= a)&&(b <= c)) {
+    when {
+        (c <= a) && (c <= b) -> {
+            min = c
+            first = min(a, b)
+        }
+        (b <= a)&&(b <= c) -> {
             min= b
-            first = minimum(a,c)
-        } else {
+            first = max(a, c)
+        }
+        else -> {
             min = a
-            first = minimum(b,c)
-        };
-    val wallFirst = minimum(r,s)
-    val wallSecond = maximum(r,s)
-    return ((min <= wallFirst)&&(first <= wallSecond))
+            first = min(b, c)
+        }
+    }
+    val wallFirst = max(r, s)
+    val wallSecond = min(r, s)
+    return ((min <= wallFirst) && (first <= wallSecond))
 }

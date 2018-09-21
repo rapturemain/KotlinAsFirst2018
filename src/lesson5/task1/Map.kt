@@ -2,7 +2,6 @@
 
 package lesson5.task1
 
-import lesson4.task1.reventListString
 
 /**
  * Пример
@@ -204,10 +203,10 @@ fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>>{
     if (!list4.isEmpty()) list4 = sortListOfString(list4, 0, list4.size - 1)
     if (!list3.isEmpty()) list3 = sortListOfString(list3, 0, list3.size - 1)
     if (!list2.isEmpty()) list2 = sortListOfString(list2, 0, list2.size - 1)
-    if (!list5.isEmpty()) buffer.put(5, reventListString(list5))
-    if (!list4.isEmpty()) buffer.put(4, reventListString(list4))
-    if (!list3.isEmpty()) buffer.put(3, reventListString(list3))
-    if (!list2.isEmpty()) buffer.put(2, reventListString(list2))
+    if (!list5.isEmpty()) buffer.put(5, list5.reversed())
+    if (!list4.isEmpty()) buffer.put(4, list4.reversed())
+    if (!list3.isEmpty()) buffer.put(3, list3.reversed())
+    if (!list2.isEmpty()) buffer.put(2, list2.reversed())
     return buffer
 }
 

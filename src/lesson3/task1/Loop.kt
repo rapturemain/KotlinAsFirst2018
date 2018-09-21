@@ -1,9 +1,8 @@
 @file:Suppress("UNUSED_PARAMETER")
 package lesson3.task1
 
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.sqrt
+import java.lang.Math.pow
+import kotlin.math.*
 
 /**
  * Пример
@@ -86,18 +85,18 @@ fun digitNumber(n: Int): Int{
  * Ряд Фибоначчи определён следующим образом: fib(1) = 1, fib(2) = 1, fib(n+2) = fib(n) + fib(n+1)
  */
 fun fib(n: Int): Int {
-    if (n == 1) return 1 else
-        if (n == 2) return 1 else
-            if (n == 3) return 2 else {
-            var list = mutableListOf<Int>()
-            list.add(1)
-            list.add(2)
-            for (i in 4..n-1) {
-                if (isEven(i)) list[0] += list[1] else
-                    list[1] += list[0]
-            }
-            return list[0]+list[1]
-        }
+    when (n) {
+        1 -> return 1
+        2 -> return 1
+        3 -> return 2
+    }
+    var n1 = 2
+    var n2 = 1
+    for (i in 4..n){
+        if (isEven(i)) n2 += n1
+            else n1 += n2
+    }
+    return if (isEven(n)) n2 else n1
 }
 
 /**
@@ -108,8 +107,8 @@ fun fib(n: Int): Int {
  */
 fun isEven (n: Int) = (n % 2 == 0)
 
-fun gcd(m: Int, n: Int):Int {
-    when (m){
+fun gcd(m: Int, n: Int): Int {
+    when (m) {
         0 -> return n
         1 -> return 1
     }
@@ -117,24 +116,26 @@ fun gcd(m: Int, n: Int):Int {
         0 -> return m
         1 -> return 1
     }
-    if (m == n) return m
-    if ((isEven(m))&&(isEven(n))) return 2*gcd(m/2, n/2)
-    if ((isEven(m))&&(!isEven(n))) return gcd(m/2, n)
-    if ((!isEven(m))&&(isEven(n))) return gcd(m, n/2)
-    if ((!isEven(m))&&(!isEven(n))&&(n > m)) return gcd((n-m)/2, m)
-    if ((!isEven(m))&&(!isEven(n))&&(n < m)) return gcd((m-n)/2, n)
-    return -1
+    return when {
+        m == n -> m
+        (isEven(m))&&(isEven(n)) -> 2*gcd(m/2, n/2)
+        (isEven(m))&&(!isEven(n)) -> gcd(m/2, n)
+        (!isEven(m))&&(isEven(n)) -> gcd(m, n/2)
+        (!isEven(m))&&(!isEven(n))&&(n > m) -> gcd((n-m)/2, m)
+        (!isEven(m))&&(!isEven(n))&&(n < m) -> gcd((m-n)/2, n)
+        else -> -1
+    }
 }
 
-fun lcm(m: Int, n: Int): Int = abs(m*n)/gcd(m,n)
+fun lcm(m: Int, n: Int): Int = abs(m*n) / gcd(m, n)
 
 /**
  * Простая
  *
  * Для заданного числа n > 1 найти минимальный делитель, превышающий 1
  */
-fun minDivisor(n: Int): Int{
-    for (i in 2..n/2){
+fun minDivisor(n: Int): Int {
+    for (i in 2..sqrt(n.toDouble()).toInt()){
         if (n % i == 0) return i
     }
     return n
@@ -154,7 +155,7 @@ fun maxDivisor(n: Int): Int = n / minDivisor(n)
  * Взаимно простые числа не имеют общих делителей, кроме 1.
  * Например, 25 и 49 взаимно простые, а 6 и 8 -- нет.
  */
-fun isCoPrime(m: Int, n: Int): Boolean = (gcd(m,n) == 1)
+fun isCoPrime(m: Int, n: Int): Boolean = (gcd(m, n) == 1)
 
 /**
  * Простая
@@ -164,11 +165,9 @@ fun isCoPrime(m: Int, n: Int): Boolean = (gcd(m,n) == 1)
  * Например, для интервала 21..28 21 <= 5*5 <= 28, а для интервала 51..61 квадрата не существует.
  */
 fun squareBetweenExists(m: Int, n: Int): Boolean {
-    val lo = sqrt(m.toDouble()).toInt()
-    val hi = sqrt(n.toDouble()).toInt()
-    if ((lo*lo == m)||(hi*hi == n)) return true
-    if (hi-lo>0) return true
-    return false
+    val lo = ceil(sqrt(m.toDouble()))
+    val hi = floor(sqrt(n.toDouble()))
+    return hi - lo >= 0
 }
 
 /**
@@ -187,11 +186,12 @@ fun squareBetweenExists(m: Int, n: Int): Boolean {
  * Написать функцию, которая находит, сколько шагов требуется для
  * этого для какого-либо начального X > 0.
  */
-fun collatzSteps2(x: Int, count: Int): Int {
-    if (x == 1) return count else
-    if(isEven(x)) return collatzSteps2(x/2, count + 1) else
-        return collatzSteps2(3*x+1, count + 1)
-}
+fun collatzSteps2(x: Int, count: Int): Int =
+        when {
+            x == 1 -> count
+            isEven(x) -> collatzSteps2(x/2, count + 1)
+            else -> collatzSteps2(3*x+1, count + 1)
+        }
 
 fun collatzSteps(x: Int): Int {
     return collatzSteps2(x, 0)
@@ -204,38 +204,20 @@ fun collatzSteps(x: Int): Int {
  * sin(x) = x - x^3 / 3! + x^5 / 5! - x^7 / 7! + ...
  * Нужную точность считать достигнутой, если очередной член ряда меньше eps по модулю
  */
-fun power(n: Double, count:Int):Double{
-    if (n == 0.0) return 0.0
-    if (count == 0) return 1.0
-    var buffer:Double = 1.0
-    for (i in 1..count) buffer *= n
-    return buffer
-}
 
-fun power(n: Int, count:Int):Int{
-    if (n == 0) return 0
-    if (count == 0) return 1
-    var buffer:Int = 1
-    for (i in 1..count) buffer *= n
-    return buffer
-}
-
-
-fun sin(x: Double, eps: Double): Double{
-    var n: Double = 99999.0
-    var xUp = x
-    if (x>2*PI) xUp = x - ((x / PI) / 2).toInt() * PI * 2
-    if (x<-2*PI) xUp = x + ((x / PI) / 2).toInt() * PI * 2
+fun sin(x: Double, eps: Double): Double {
+    var n = 1.0
+    val xUp = x % (2 * PI)
     var count = -1
     var realCount = 0
-    var buffer: Double = 0.0
+    var buffer = 0.0
     while (abs(n) >= eps) {
         count += 2
         realCount++
-        n = power(xUp, count)
-        n /= factorial(count)
-        if (isEven(realCount)) buffer -= n else
-            buffer += n
+        if (realCount == 1) n = xUp
+            else n *= xUp * xUp / (count * (count - 1))
+        if (isEven(realCount)) buffer -= n
+            else buffer += n
     }
     return buffer
 }
@@ -248,20 +230,18 @@ fun sin(x: Double, eps: Double): Double{
  * Нужную точность считать достигнутой, если очередной член ряда меньше eps по модулю
  */
 fun cos(x: Double, eps: Double): Double {
-    var n: Double = 9999999.0
-    var xUp = x
-    if (x>2*PI) xUp = x - ((x / PI) / 2).toInt() * PI * 2
-    if (x<-2*PI) xUp = x + ((x / PI) / 2).toInt() * PI * 2
-    var count = 0
+    var n = 1.0
+    val xUp = x % (2 * PI)
+    var count = -2
     var realCount = 1
-    var buffer: Double = 1.0
+    var buffer = 0.0
     while (abs(n) >= eps){
         count += 2
         realCount++
-        n = power(xUp, count)
-        n /= factorial(count)
-        if (isEven(realCount)) buffer -= n else
-            buffer += n
+        if (realCount == 2) n = 1.0
+            else n *= xUp * xUp / (count * (count - 1))
+        if (isEven(realCount)) buffer += n
+            else buffer -= n
     }
     return buffer
 }
@@ -273,12 +253,14 @@ fun cos(x: Double, eps: Double): Double {
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun revert(n: Int): Int{
+fun revert(n: Int): Int {
     var number = n
     var swap = 0
-    var count = digitNumber(n)
+    val count = digitNumber(n)
+    var power = pow(10.0, (count - 1).toDouble()).toInt()
     for (i in 1..count){
-        swap += power(10,( count - i )) * ( number % 10 )
+        swap += power * (number % 10)
+        power /= 10
         number /= 10
     }
     return swap
@@ -303,11 +285,10 @@ fun isPalindrome(n: Int): Boolean = ( n == revert(n) )
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun hasDifferentDigits(n: Int): Boolean{
+fun hasDifferentDigits(n: Int): Boolean {
     val last = n % 10
     var number = n
-    if (n == 0) return false
-    while (number != 0){
+    while (number != 0) {
         if (number % 10 != last) return true
         number /= 10
     }
@@ -323,19 +304,19 @@ fun hasDifferentDigits(n: Int): Boolean{
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun squareSequenceDigit(n: Int): Int{
+fun squareSequenceDigit(n: Int): Int {
     var count = 0
     var countNumber = 1
-    var sqrnum: Int = 0
+    var sqrnum = 0
     while ( count < n ){
         sqrnum = countNumber * countNumber
         count += digitNumber(sqrnum)
         countNumber++
     }
     count -= n - 1
-    if (count == 1) return sqrnum % 10 else {
-        for (i in 1..count - 1) sqrnum /= 10
-        return sqrnum % 10
+    return if (count == 1) sqrnum % 10 else {
+        for (i in 1 until count) sqrnum /= 10
+        sqrnum % 10
     }
 }
 
@@ -348,18 +329,18 @@ fun squareSequenceDigit(n: Int): Int{
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun fibSequenceDigit(n: Int): Int{
+fun fibSequenceDigit(n: Int): Int {
     var count = 0
     var countNumber = 1
-    var sqrnum: Int = 0
+    var sqrnum = 0
     while ( count < n ){
         sqrnum = fib(countNumber)
         count += digitNumber(sqrnum)
         countNumber++
     }
     count -= n - 1
-    if (count == 1) return sqrnum % 10 else {
-        for (i in 1..count - 1) sqrnum /= 10
-        return sqrnum % 10
+    return if (count == 1) sqrnum % 10 else {
+        for (i in 1 until count) sqrnum /= 10
+        sqrnum % 10
     }
 }
