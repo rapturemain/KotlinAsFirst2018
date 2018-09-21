@@ -108,7 +108,7 @@ fun brickPasses(a: Int, b: Int, c: Int, r: Int, s: Int): Boolean {
             first = min(b, c)
         }
     }
-    val wallFirst = max(r, s)
-    val wallSecond = min(r, s)
+    val wallFirst = min(r, s)
+    val wallSecond = max(r, s)
     return ((min <= wallFirst) && (first <= wallSecond))
 }
