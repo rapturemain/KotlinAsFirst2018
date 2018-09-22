@@ -126,6 +126,8 @@ fun swap(list: MutableList<String>, lo: Int, hi: Int):MutableList<String> {
 }
 
 fun isAlphabit(left: String, right: String): Boolean {
+    if (left == "") return true
+    if (right == "") return false
     var i = 0
     while (left[i] == right[i]){
         i++
