@@ -142,11 +142,11 @@ fun mean(list: List<Double>): Double =
  * Обратите внимание, что данная функция должна изменять содержание списка list, а не его копии.
  */
 fun center(list: MutableList<Double>): MutableList<Double> {
-        val average = mean(list)
-        for (i in 0 until list.size) {
-            list[i] -= average
-        }
-       return  list
+    val average = mean(list)
+    for (i in 0 until list.size) {
+        list[i] -= average
+    }
+    return  list
     }
 
 /**
@@ -310,19 +310,19 @@ fun roman(n: Int): String {
     val sym = mutableListOf("I", "V", "X", "L", "C", "D", "M")
     var count = 0
     var number = n
-    while (count < 5){
-        when (number % 10){
+    while (count < 5) {
+        when (number % 10) {
             1 -> list.add(sym[count])
             2 -> list.add(sym[count] + sym[count])
             3 -> list.add(sym[count] + sym[count] + sym[count])
-            4 -> list.add(sym[count] + sym[count+1])
-            5 -> list.add(sym[count+1])
-            6 -> list.add(sym[count+1] + sym[count])
-            7 -> list.add(sym[count+1] + sym[count] + sym[count])
-            8 -> list.add(sym[count+1] + sym[count] + sym[count] + sym[count])
-            9 -> list.add(sym[count] + sym[count+2])
+            4 -> list.add(sym[count] + sym[count + 1])
+            5 -> list.add(sym[count + 1])
+            6 -> list.add(sym[count + 1] + sym[count])
+            7 -> list.add(sym[count + 1] + sym[count] + sym[count])
+            8 -> list.add(sym[count + 1] + sym[count] + sym[count] + sym[count])
+            9 -> list.add(sym[count] + sym[count + 2])
         }
-        count+=2
+        count += 2
         number /= 10
     }
     for (i in 1..number) list.add(sym[count])

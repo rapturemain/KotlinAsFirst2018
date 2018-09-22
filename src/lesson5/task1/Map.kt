@@ -94,41 +94,16 @@ fun buildWordSet(text: List<String>): MutableSet<String> {
  *     mapOf("Emergency" to "911", "Police" to "02")
  *   ) -> mapOf("Emergency" to "112, 911", "Police" to "02")
  */
-fun isIn(list:MutableList<String>, value: String):Boolean{
-    for (i in 0..list.size - 1){
-        if (list[i] == value) return true
+fun mergePhoneBooks(mapA: Map<String, String>, mapB: Map<String, String>): Map<String, String> {
+    val buffer = mutableMapOf<String, String>()
+    mapA.forEach {
+        key, value ->
+        if ((mapB.containsKey(key)) && (value != mapB[key])) buffer[key] = value + ", " + mapB[key]
+        else buffer[key] = value
     }
-    return false
-}
-
-fun mergePhoneBooks(mapA: Map<String, String>, mapB: Map<String, String>): Map<String, String>{
-    var buffer = mutableMapOf<String, String>()
-    var bufferNumber = mutableListOf<String>()
-    var bufferService = ""
-    var bufferNumberString = ""
-    for ((serviceA, numberA) in mapA){
-        bufferService = serviceA
-        bufferNumber.clear()
-        bufferNumber.add(numberA)
-        bufferNumberString = ""
-        for ((serviceB, numberB) in mapB){
-            if (serviceB == bufferService)
-                if (!isIn(bufferNumber, numberB)) bufferNumber.add(numberB)
-        }
-        for (i in 0..bufferNumber.size - 2){
-            bufferNumberString += bufferNumber[i] + ", "
-        }
-        bufferNumberString += bufferNumber[bufferNumber.size - 1]
-        buffer.put(bufferService, bufferNumberString)
-    }
-    var boolean = false
-    for ((serviceB, numberB) in mapB){
-        boolean = false
-        for ((serviceA, numberA) in mapA){
-            if (serviceA==serviceB) boolean = true
-        }
-        if (!boolean)
-        buffer.put(serviceB, numberB)
+    mapB.forEach {
+        key, value ->
+        if (!buffer.containsKey(key)) buffer[key] = value
     }
     return buffer
 }
@@ -143,35 +118,35 @@ fun mergePhoneBooks(mapA: Map<String, String>, mapB: Map<String, String>): Map<S
  *   buildGrades(mapOf("Марат" to 3, "Семён" to 5, "Михаил" to 5))
  *     -> mapOf(5 to listOf("Семён", "Михаил"), 3 to listOf("Марат"))
  */
-fun swap(list: MutableList<String>, lo: Int, hi: Int):MutableList<String>{
+fun swap(list: MutableList<String>, lo: Int, hi: Int):MutableList<String> {
     val left = list[lo]
     list[lo] = list[hi]
     list[hi] = left
     return list
 }
 
-fun isAlphabit(left: String, right: String): Boolean{
+fun isAlphabit(left: String, right: String): Boolean {
     var i = 0
     while (left[i] == right[i]){
         i++
-        if ((i>left.length - 1)&&(i>right.length - 1)) return true
-        if (i>right.length - 1) return true
-        if (i>left.length - 1) return false
+        if ((i > left.length - 1) && (i > right.length - 1)) return true
+        if (i > right.length - 1) return true
+        if (i > left.length - 1) return false
     }
     return (left[i] < right[i])
 }
+fun sortListOfString(list: MutableList<String>) = sortListOfString(list, 0, list.size - 1).reversed().toMutableList()
 
-fun sortListOfString(list: MutableList<String>, l: Int, h: Int):MutableList<String>{
+fun sortListOfString(list: MutableList<String>, l: Int, h: Int):MutableList<String> {
     if (l == h) return list
-    if (h - l == 1) if (!isAlphabit(list[l],list[h])) return swap(list,l,h) else return list
-    var base = list[l]
+    if (h - l == 1) return if (!isAlphabit(list[l], list[h])) swap(list, l, h) else list
+    val base = list[l]
     var lo = l
     var hi = h
-    var buffer = mutableListOf<String>()
-    buffer = list
+    var buffer = list
     while (lo < hi){
-        while ((isAlphabit(list[lo], base))&&(lo < hi)) lo++
-        while ((isAlphabit(base, list[hi]))&&(lo < hi)) hi--
+        while ((isAlphabit(list[lo], base)) && (lo < hi)) lo++
+        while ((isAlphabit(base, list[hi])) && (lo < hi)) hi--
         if (lo != hi) {
             buffer = swap(buffer, lo, hi)
             lo++
@@ -184,30 +159,18 @@ fun sortListOfString(list: MutableList<String>, l: Int, h: Int):MutableList<Stri
     return buffer
 }
 
-fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>>{
-    var list2 = mutableListOf<String>()
-    var list3 = mutableListOf<String>()
-    var list4 = mutableListOf<String>()
-    var list5 = mutableListOf<String>()
-    var mark = 0
-    var buffer = mutableMapOf<Int, List<String>>()
-    for ((name, grade) in grades){
-        when (grade){
-            2 -> list2.add(name)
-            3 -> list3.add(name)
-            4 -> list4.add(name)
-            5 -> list5.add(name)
-        }
+fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> {
+    val map = mutableMapOf<Int, MutableList<String>>()
+    grades.forEach {
+        value, key ->
+        if (!map.containsKey(key)) map[key] = emptyList<String>().toMutableList()
+        map[key]?.add(value)
     }
-    if (!list5.isEmpty()) list5 = sortListOfString(list5, 0, list5.size - 1)
-    if (!list4.isEmpty()) list4 = sortListOfString(list4, 0, list4.size - 1)
-    if (!list3.isEmpty()) list3 = sortListOfString(list3, 0, list3.size - 1)
-    if (!list2.isEmpty()) list2 = sortListOfString(list2, 0, list2.size - 1)
-    if (!list5.isEmpty()) buffer.put(5, list5.reversed())
-    if (!list4.isEmpty()) buffer.put(4, list4.reversed())
-    if (!list3.isEmpty()) buffer.put(3, list3.reversed())
-    if (!list2.isEmpty()) buffer.put(2, list2.reversed())
-    return buffer
+    map.forEach{
+        key, value ->
+        map[key] = sortListOfString(value)
+    }
+    return map.toSortedMap(compareBy<Int> { it }.reversed())
 }
 
 /**
@@ -220,7 +183,14 @@ fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>>{
  *   containsIn(mapOf("a" to "z"), mapOf("a" to "z", "b" to "sweet")) -> true
  *   containsIn(mapOf("a" to "z"), mapOf("a" to "zee", "b" to "sweet")) -> false
  */
-fun containsIn(a: Map<String, String>, b: Map<String, String>): Boolean = TODO()
+fun containsIn(a: Map<String, String>, b: Map<String, String>): Boolean {
+    var buffer = true
+    a.forEach {
+        key, value ->
+        if (!((b.containsKey(key)) && (b[key] == value))) buffer = false
+    }
+    return buffer
+}
 
 /**
  * Средняя
@@ -232,7 +202,23 @@ fun containsIn(a: Map<String, String>, b: Map<String, String>): Boolean = TODO()
  *   averageStockPrice(listOf("MSFT" to 100.0, "MSFT" to 200.0, "NFLX" to 40.0))
  *     -> mapOf("MSFT" to 150.0, "NFLX" to 40.0)
  */
-fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Double> = TODO()
+fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Double> {
+    val map = mutableMapOf<String, Double>()
+    val buffer = mutableMapOf<String, Pair<Double, Int>>()
+    stockPrices.forEach {
+        (key, value) ->
+        if (buffer.containsKey(key)) {
+            val first = buffer.getValue(key).first
+            val second = buffer.getValue(key).second
+            buffer.replace(key, (first to second), (first + value to second + 1))
+        } else buffer[key] = value to 1
+    }
+    buffer.forEach {
+        key, value ->
+        map[key] = value.first / value.second
+    }
+    return map
+}
 
 /**
  * Средняя
