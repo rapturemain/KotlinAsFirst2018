@@ -232,9 +232,9 @@ fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Doub
  *   ) -> "Мария"
  */
 fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): String? {
-    var max = 999999999.0
+    var max = Double.MAX_VALUE
     var buffer = ""
-    stuff.forEach{
+    stuff.forEach {
         key, (type, cost) ->
         if ((type == kind) && (max >= cost)) {
                     buffer = key
@@ -269,7 +269,7 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *          "Mikhail" to setOf("Sveta", "Marat")
  *        )
  */
-fun graphFriends(friends: MutableMap<String, Pair<MutableSet<String>, Int>>, obj: String, last: Int):Set<String> {
+fun graphFriends(friends: MutableMap<String, Pair<MutableSet<String>, Int>>, obj: String, last: Int): Set<String> {
     if (friends.getValue(obj).second == 1) return friends.getValue(obj).first
     if (friends.getValue(obj).second in 3..last) return friends.getValue(obj).first
     friends.replace(obj, friends.getValue(obj).first to last)
@@ -284,7 +284,7 @@ fun graphFriends(friends: MutableMap<String, Pair<MutableSet<String>, Int>>, obj
     }
     val secbuf = friends.getValue(obj).first
     secbuf.addAll(buffer.filter { it != obj})
-    friends.replace(obj, (secbuf.toSortedSet() to 1))
+    friends.replace(obj, (secbuf to 1))
     buffer = friends.getValue(obj).first
     return buffer
 }
