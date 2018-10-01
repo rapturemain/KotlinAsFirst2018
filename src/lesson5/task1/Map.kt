@@ -289,6 +289,7 @@ fun graphFriends (friends: MutableMap<String, Pair<MutableSet<String>, Int>>, ob
             values.add(it)
         }
     }
+
     friends.replace(obj, values to max)
     return max
 }
