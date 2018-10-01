@@ -303,6 +303,10 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
         key, _ ->
         graphFriends(buffer, key)
     }
+    buffer.forEach {
+        key, _ ->
+        graphFriends(buffer, key)
+    }
     val ans = mutableMapOf<String, Set<String>>()
     buffer.forEach{
         key, value ->
