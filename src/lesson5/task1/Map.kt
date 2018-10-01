@@ -271,45 +271,42 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *        )
  */
 
-fun graphFriends (friends: MutableMap<String, Pair<MutableSet<String>, Int>>, obj: String, last: Int): Int {
-    if ((friends.getValue(obj).second % 2 == 0) ||
-        (friends.getValue(obj).second in 3..last) ||
-        (friends.getValue(obj).first.isEmpty())) return last
-    friends.replace(obj, friends.getValue(obj).first to last)
-    val buffer = friends.getValue(obj).first
-    var max = last
-    var maxbuf = max
-    val values = friends.getValue(obj).first
-    buffer.forEach {
-        if (obj != it) {
-            if (max < maxbuf) max = maxbuf
-            maxbuf = graphFriends(friends, it, max + 2)
-            values.addAll(friends.getValue(it).first.filter { that ->
-                that != obj && !values.contains(that) })
-            values.add(it)
+fun graphFriends (friends: MutableMap<String, Pair<MutableSet<String>, Int>>, obj: String): MutableSet<String>{
+    if (friends.getValue(obj).first.isEmpty()) return mutableSetOf()
+    if (friends.getValue(obj).second == 0) return friends.getValue(obj).first
+    if (friends.getValue(obj).second == 2) return friends.getValue(obj).first
+    val buffer = mutableSetOf<String>()
+    friends[obj] = friends.getValue(obj).first to 2
+    friends.getValue(obj).first.forEach {
+        it ->
+        if (it != obj) {
+            buffer.addAll(graphFriends(friends, it))
+            buffer.add(it)
         }
     }
-
-    friends.replace(obj, values to max)
-    return max
+    buffer.addAll(friends.getValue(obj).first)
+    friends[obj] = buffer.filter { it != obj}.toMutableSet() to 0
+    return buffer
 }
+
 
 fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> {
     val buffer = mutableMapOf<String, Pair<MutableSet<String>, Int>>()
     friends.forEach {
         key, value ->
-        value.forEach { if (!friends.containsKey(it)) buffer[it] = mutableSetOf<String>() to 0 }
-        buffer[key] = value.toMutableSet() to 1
+        value.forEach {
+            buffer[key] = value.toMutableSet() to 1
+            if (!(friends.containsKey(it)) && (!buffer.containsKey(it))) buffer[it] = mutableSetOf<String>() to 0
+        }
     }
-    var rec = 3
     buffer.forEach {
-        key, _ -> rec = graphFriends(buffer, key, rec)
-        rec += 2
+        key, _ ->
+        graphFriends(buffer, key)
     }
-    val ans = friends.toMutableMap()
-    buffer.forEach {
+    val ans = mutableMapOf<String, Set<String>>()
+    buffer.forEach{
         key, value ->
-        ans[key] = value.first.toSet()
+        ans[key] = value.first
     }
     return ans
 }
