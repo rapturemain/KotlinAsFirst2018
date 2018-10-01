@@ -270,7 +270,9 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *          "Mikhail" to setOf("Sveta", "Marat")
  *        )
  */
-fun graphFriends(friends: MutableMap<String, Pair<MutableSet<String>, Int>>, obj: String, last: Int): Pair<MutableSet<String>, Int> {
+fun graphFriends(friends: MutableMap<String, Pair<MutableSet<String>, Int>>, obj: String, last: Int):
+        Pair<MutableSet<String>, Int> {
+    if (friends.getValue(obj).second == -1) return (mutableSetOf(obj) to last)
     if (friends.getValue(obj).second == 1) return (friends.getValue(obj).first to last)
     if (friends.getValue(obj).second in 3..last) return (friends.getValue(obj).first to last)
     friends.replace(obj, friends.getValue(obj).first to last)
@@ -298,7 +300,7 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
     friends.forEach {
         key, value ->
         value.forEach { if ((!friends.containsKey(it)) && (!buffer.containsKey(it)))
-                            buffer[it] = mutableSetOf<String>() to 1}
+                            buffer[it] = mutableSetOf<String>() to -1}
         buffer[key] = value.toMutableSet() to 0
     }
     var max = 3
