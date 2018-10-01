@@ -285,12 +285,12 @@ fun graphFriends(friends: MutableMap<String, Pair<MutableSet<String>, Int>>, obj
             buffer.addAll(rec.first)
             if (max < rec.second) max = rec.second
         } else if (!friends.containsKey(it)) {
-            friends[it] = mutableSetOf<String>() to last-1
+            friends[it] = mutableSetOf<String>() to last - 1
         }
     }
     val secbuf = friends.getValue(obj).first
     secbuf.addAll(buffer.filter { it != obj })
-    friends.replace(obj, (secbuf to 1))
+    friends.replace(obj, (secbuf to last - 1))
     buffer = friends.getValue(obj).first
     return (buffer to max)
 }
@@ -300,7 +300,7 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
     friends.forEach {
         key, value ->
         value.forEach { if ((!friends.containsKey(it)) && (!buffer.containsKey(it)))
-                            buffer[it] = mutableSetOf<String>() to -1}
+                            buffer[it] = mutableSetOf(it) to 1 }
         buffer[key] = value.toMutableSet() to 0
     }
     var max = 6
@@ -312,7 +312,7 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
     val ans = friends.toMutableMap()
     buffer.forEach{
         key, value ->
-        ans[key] = value.first
+        ans[key] = value.first.filter { it != key }.toSet()
     }
     return ans
 }
