@@ -279,17 +279,17 @@ fun graphFriends (friends: MutableMap<String, Pair<MutableSet<String>, Int>>, ob
     val buffer = friends.getValue(obj).first
     var max = last
     var maxbuf = max
+    val values = friends.getValue(obj).first
     buffer.forEach {
         if (obj != it) {
             if (max < maxbuf) max = maxbuf
             maxbuf = graphFriends(friends, it, max + 2)
-            val values = friends.getValue(obj).first
             values.addAll(friends.getValue(it).first.filter { that ->
                 that != obj && !values.contains(that) })
             values.add(it)
-            friends.replace(obj, values to max)
         }
     }
+    friends.replace(obj, values to max)
     return max
 }
 
