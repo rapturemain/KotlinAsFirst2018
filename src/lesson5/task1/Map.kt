@@ -271,22 +271,19 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *        )
  */
 
-fun graphFriends (friends: MutableMap<String, Pair<MutableSet<String>, Int>>, obj: String): MutableSet<String>{
+fun graphFriends (friends: MutableMap<String, Pair<MutableSet<String>, Int>>, obj: String): MutableSet<String> {
     if (friends.getValue(obj).first.isEmpty()) return mutableSetOf()
     if (friends.getValue(obj).second == 0) return friends.getValue(obj).first
     if (friends.getValue(obj).second == 2) return friends.getValue(obj).first
-    val buffer = mutableSetOf<String>()
+    var buffer = mutableSetOf<String>()
     friends[obj] = friends.getValue(obj).first to 2
-    friends.getValue(obj).first.forEach {
-        it ->
+    friends.getValue(obj).first.forEach { it ->
         if (it != obj) {
-            graphFriends(friends, it).forEach {
-                buffer.add(it)
-            }
-            buffer.add(it)
+            buffer = buffer.plus(graphFriends(friends, it)).toMutableSet()
+            buffer = buffer.plus(it).toMutableSet()
         }
     }
-    buffer.addAll(friends.getValue(obj).first)
+    buffer = buffer.plus(friends.getValue(obj).first).toMutableSet()
     friends[obj] = buffer.filter { it != obj}.toMutableSet() to 0
     return buffer
 }
