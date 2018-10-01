@@ -284,7 +284,8 @@ fun graphFriends (friends: MutableMap<String, Pair<MutableSet<String>, Int>>, ob
             if (max < maxbuf) max = maxbuf
             maxbuf = graphFriends(friends, it, max + 2)
             val values = friends.getValue(obj).first
-            values.addAll(friends.getValue(it).first.filter { that -> that != obj })
+            values.addAll(friends.getValue(it).first.filter { that ->
+                that != obj && !values.contains(that) })
             values.add(it)
             friends.replace(obj, values to max)
         }
