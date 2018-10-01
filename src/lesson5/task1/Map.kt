@@ -294,9 +294,9 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
     val buffer = mutableMapOf<String, Pair<MutableSet<String>, Int>>()
     friends.forEach {
         key, value ->
+        buffer[key] = value.toMutableSet() to 1
         value.forEach {
-            buffer[key] = value.toMutableSet() to 1
-            if (!(friends.containsKey(it)) && (!buffer.containsKey(it))) buffer[it] = mutableSetOf<String>() to 0
+            if (!(friends.containsKey(it))) buffer[it] = mutableSetOf<String>() to 0
         }
     }
     buffer.forEach {
