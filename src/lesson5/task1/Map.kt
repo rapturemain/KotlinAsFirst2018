@@ -2,6 +2,8 @@
 
 package lesson5.task1
 
+import jdk.nashorn.internal.objects.Global.Infinity
+
 
 /**
  * Пример
@@ -232,17 +234,16 @@ fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Doub
  *   ) -> "Мария"
  */
 fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): String? {
-    var max = Double.MAX_VALUE
-    var buffer = ""
+    var max = Infinity
+    var buffer: String? = null
     stuff.forEach {
         key, (type, cost) ->
         if ((type == kind) && (max >= cost)) {
-                    buffer = key
-                    max = cost
-                }
+            buffer = key
+            max = cost
+        }
     }
-    return if (buffer != "") buffer
-           else null
+    return buffer
 }
 
 /**
@@ -269,24 +270,27 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *          "Mikhail" to setOf("Sveta", "Marat")
  *        )
  */
-fun graphFriends(friends: MutableMap<String, Pair<MutableSet<String>, Int>>, obj: String, last: Int): Set<String> {
-    if (friends.getValue(obj).second == 1) return friends.getValue(obj).first
-    if (friends.getValue(obj).second in 3..last) return friends.getValue(obj).first
+fun graphFriends(friends: MutableMap<String, Pair<MutableSet<String>, Int>>, obj: String, last: Int): Pair<MutableSet<String>, Int> {
+    if (friends.getValue(obj).second == 1) return (friends.getValue(obj).first to last)
+    if (friends.getValue(obj).second in 3..last) return (friends.getValue(obj).first to last)
     friends.replace(obj, friends.getValue(obj).first to last)
     var buffer = mutableSetOf<String>()
+    var max = 0
     friends.getValue(obj).first.forEach {
         it ->
         if ((it != obj) && (friends.containsKey(it))) {
-            buffer.addAll(graphFriends(friends, it, last + 1))
+            val rec = graphFriends(friends, it, last + 1)
+            buffer.addAll(rec.first)
+            if (max < rec.second) max = rec.second
         } else if (!friends.containsKey(it)) {
-            friends[it] = emptySet<String>().toMutableSet() to 1
+            friends[it] = mutableSetOf<String>() to 1
         }
     }
     val secbuf = friends.getValue(obj).first
     secbuf.addAll(buffer.filter { it != obj})
     friends.replace(obj, (secbuf to 1))
     buffer = friends.getValue(obj).first
-    return buffer
+    return (buffer to max)
 }
 
 fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> {
@@ -294,18 +298,19 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
     friends.forEach {
         key, value ->
         value.forEach { if ((!friends.containsKey(it)) && (!buffer.containsKey(it)))
-                            buffer[it] = emptySet<String>().toMutableSet() to 1}
+                            buffer[it] = mutableSetOf<String>() to 1}
         buffer[key] = value.toMutableSet() to 0
     }
+    var max = 3
     buffer.forEach {
         key, _ ->
-        graphFriends(buffer, key, 3)
+        val rec = graphFriends(buffer, key, max)
+        max = rec.second + 1
     }
     val ans = friends.toMutableMap()
     buffer.forEach{
         key, value ->
-        if (ans.containsKey(key)) ans.replace(key, value.first)
-        else ans[key] = value.first
+        ans[key] = value.first
     }
     return ans
 }
