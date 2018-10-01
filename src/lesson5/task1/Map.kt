@@ -280,7 +280,9 @@ fun graphFriends (friends: MutableMap<String, Pair<MutableSet<String>, Int>>, ob
     friends.getValue(obj).first.forEach {
         it ->
         if (it != obj) {
-            buffer.addAll(graphFriends(friends, it))
+            graphFriends(friends, it).forEach {
+                buffer.add(it)
+            }
             buffer.add(it)
         }
     }
