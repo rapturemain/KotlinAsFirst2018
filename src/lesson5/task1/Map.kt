@@ -271,48 +271,43 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *        )
  */
 
-fun graphFriends(friends: MutableMap<String, Pair<MutableSet<String>, Int>>, obj: String, last: Int):
-        Pair<MutableSet<String>, Int> {
-    if (friends.getValue(obj).second % 2 == 1) return (friends.getValue(obj).first to last)
-    if (friends.getValue(obj).second in 6..last) return (friends.getValue(obj).first to last)
+fun graphFriends (friends: MutableMap<String, Pair<MutableSet<String>, Int>>, obj: String, last: Int): Int {
+    if ((friends.getValue(obj).second % 2 == 0) ||
+        (friends.getValue(obj).second in 3..last) ||
+        (friends.getValue(obj).first.isEmpty())) return last
     friends.replace(obj, friends.getValue(obj).first to last)
-    var buffer = mutableSetOf<String>()
-    var max = 0
-    friends.getValue(obj).first.forEach {
-        it ->
-        if ((it != obj) && (friends.containsKey(it))) {
-            val rec = graphFriends(friends, it, last + 2)
-            buffer.addAll(rec.first)
-            if (max < rec.second) max = rec.second
-        } else if (!friends.containsKey(it)) {
-            friends[it] = mutableSetOf<String>() to last - 1
+    val buffer = friends.getValue(obj).first
+    var max = last
+    var maxbuf = max
+    buffer.forEach {
+        if (obj != it) {
+            if (max < maxbuf) max = maxbuf
+            maxbuf = graphFriends(friends, it, max + 2)
+            val values = friends.getValue(obj).first
+            values.addAll(friends.getValue(it).first.filter { that -> that != obj })
+            values.add(it)
+            friends.replace(obj, values to max)
         }
     }
-    val secbuf = friends.getValue(obj).first
-    secbuf.addAll(buffer.filter { it != obj })
-    friends.replace(obj, (secbuf to last - 1))
-    buffer = friends.getValue(obj).first
-    return (buffer to max)
+    return max
 }
 
 fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> {
     val buffer = mutableMapOf<String, Pair<MutableSet<String>, Int>>()
     friends.forEach {
         key, value ->
-        value.forEach { if ((!friends.containsKey(it)) && (!buffer.containsKey(it)))
-                            buffer[it] = mutableSetOf(it) to 1 }
-        buffer[key] = value.toMutableSet() to 0
+        value.forEach { if (!friends.containsKey(it)) buffer[it] = mutableSetOf<String>() to 0 }
+        buffer[key] = value.toMutableSet() to 1
     }
-    var max = 6
+    var rec = 3
     buffer.forEach {
-        key, _ ->
-        val rec = graphFriends(buffer, key, max)
-        max = rec.second + 2
+        key, _ -> rec = graphFriends(buffer, key, rec)
+        rec += 2
     }
     val ans = friends.toMutableMap()
-    buffer.forEach{
+    buffer.forEach {
         key, value ->
-        ans[key] = value.first.filter { it != key }.toSet()
+        ans[key] = value.first.toSet()
     }
     return ans
 }
