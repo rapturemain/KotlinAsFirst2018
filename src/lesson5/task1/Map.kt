@@ -270,26 +270,26 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *          "Mikhail" to setOf("Sveta", "Marat")
  *        )
  */
+
 fun graphFriends(friends: MutableMap<String, Pair<MutableSet<String>, Int>>, obj: String, last: Int):
         Pair<MutableSet<String>, Int> {
-    if (friends.getValue(obj).second == -1) return (mutableSetOf(obj) to last)
-    if (friends.getValue(obj).second == 1) return (friends.getValue(obj).first to last)
-    if (friends.getValue(obj).second in 3..last) return (friends.getValue(obj).first to last)
+    if (friends.getValue(obj).second % 2 == 1) return (friends.getValue(obj).first to last)
+    if (friends.getValue(obj).second in 6..last) return (friends.getValue(obj).first to last)
     friends.replace(obj, friends.getValue(obj).first to last)
     var buffer = mutableSetOf<String>()
     var max = 0
     friends.getValue(obj).first.forEach {
         it ->
         if ((it != obj) && (friends.containsKey(it))) {
-            val rec = graphFriends(friends, it, last + 1)
+            val rec = graphFriends(friends, it, last + 2)
             buffer.addAll(rec.first)
             if (max < rec.second) max = rec.second
         } else if (!friends.containsKey(it)) {
-            friends[it] = mutableSetOf<String>() to 1
+            friends[it] = mutableSetOf<String>() to last-1
         }
     }
     val secbuf = friends.getValue(obj).first
-    secbuf.addAll(buffer.filter { it != obj})
+    secbuf.addAll(buffer.filter { it != obj })
     friends.replace(obj, (secbuf to 1))
     buffer = friends.getValue(obj).first
     return (buffer to max)
@@ -303,11 +303,11 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
                             buffer[it] = mutableSetOf<String>() to -1}
         buffer[key] = value.toMutableSet() to 0
     }
-    var max = 3
+    var max = 6
     buffer.forEach {
         key, _ ->
         val rec = graphFriends(buffer, key, max)
-        max = rec.second + 1
+        max = rec.second + 2
     }
     val ans = friends.toMutableMap()
     buffer.forEach{
