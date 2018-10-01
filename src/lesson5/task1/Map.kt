@@ -289,7 +289,6 @@ fun graphFriends(friends: MutableMap<String, Pair<MutableSet<String>, Int>>, obj
     return buffer
 }
 
-
 fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> {
     val buffer = mutableMapOf<String, Pair<MutableSet<String>, Int>>()
     friends.forEach {
