@@ -98,7 +98,7 @@ fun mergePhoneBooks(mapA: Map<String, String>, mapB: Map<String, String>): Map<S
     val buffer = mutableMapOf<String, String>()
     mapA.forEach {
         key, value ->
-        if ((mapB.containsKey(key)) && (value != mapB[key])) buffer[key] = value + ", " + mapB[key]
+        if ((mapB.containsKey(key)) && (value != mapB[key])) buffer[key] = "$value, ${ mapB[key] }"
         else buffer[key] = value
     }
     mapB.forEach {
@@ -185,13 +185,8 @@ fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> {
  *   containsIn(mapOf("a" to "z"), mapOf("a" to "z", "b" to "sweet")) -> true
  *   containsIn(mapOf("a" to "z"), mapOf("a" to "zee", "b" to "sweet")) -> false
  */
-fun containsIn(a: Map<String, String>, b: Map<String, String>): Boolean {
-    var buffer = true
-    a.forEach {
-        key, value ->
-        if (!((b.containsKey(key)) && (b[key] == value))) buffer = false
-    }
-    return buffer
+fun containsIn(a: Map<String, String>, b: Map<String, String>): Boolean = a.all { (key, value) ->
+    b[key] == value
 }
 
 /**
@@ -210,8 +205,7 @@ fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Doub
     stockPrices.forEach {
         (key, value) ->
         if (buffer.containsKey(key)) {
-            val first = buffer.getValue(key).first
-            val second = buffer.getValue(key).second
+            val (first, second) = buffer.getValue(key)
             buffer.replace(key, (first to second), (first + value to second + 1))
         } else buffer[key] = value to 1
     }
@@ -237,7 +231,19 @@ fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Doub
  *     "печенье"
  *   ) -> "Мария"
  */
-fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): String? = TODO()
+fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): String? {
+    var max = 999999999.0
+    var buffer = ""
+    stuff.forEach{
+        key, (type, cost) ->
+        if ((type == kind) && (max >= cost)) {
+                    buffer = key
+                    max = cost
+                }
+    }
+    return if (buffer != "") buffer
+           else null
+}
 
 /**
  * Сложная
@@ -263,7 +269,46 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *          "Mikhail" to setOf("Sveta", "Marat")
  *        )
  */
-fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> = TODO()
+fun graphFriends(friends: MutableMap<String, Pair<MutableSet<String>, Int>>, obj: String, last: Int):Set<String> {
+    if (friends.getValue(obj).second == 1) return friends.getValue(obj).first
+    if (friends.getValue(obj).second in 3..last) return friends.getValue(obj).first
+    friends.replace(obj, friends.getValue(obj).first to last)
+    var buffer = mutableSetOf<String>()
+    friends.getValue(obj).first.forEach {
+        it ->
+        if ((it != obj) && (friends.containsKey(it))) {
+            buffer.addAll(graphFriends(friends, it, last + 1))
+        } else if (!friends.containsKey(it)) {
+            friends[it] = emptySet<String>().toMutableSet() to 1
+        }
+    }
+    val secbuf = friends.getValue(obj).first
+    secbuf.addAll(buffer.filter { it != obj})
+    friends.replace(obj, (secbuf.toSortedSet() to 1))
+    buffer = friends.getValue(obj).first
+    return buffer
+}
+
+fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> {
+    val buffer = mutableMapOf<String, Pair<MutableSet<String>, Int>>()
+    friends.forEach {
+        key, value ->
+        value.forEach { if ((!friends.containsKey(it)) && (!buffer.containsKey(it)))
+                            buffer[it] = emptySet<String>().toMutableSet() to 1}
+        buffer[key] = value.toMutableSet() to 0
+    }
+    buffer.forEach {
+        key, _ ->
+        graphFriends(buffer, key, 3)
+    }
+    val ans = friends.toMutableMap()
+    buffer.forEach{
+        key, value ->
+        if (ans.containsKey(key)) ans.replace(key, value.first)
+        else ans[key] = value.first
+    }
+    return ans
+}
 
 /**
  * Простая
