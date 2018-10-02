@@ -271,49 +271,48 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *        )
  */
 
-fun graphFriends (friends: MutableMap<String, Pair<MutableSet<String>, Int>>, obj: String): MutableSet<String> {
+fun graphFriends (friends: MutableMap<String, Pair<MutableSet<String>, Boolean>>, obj: String, last: String): MutableSet<String> {
     if (friends.getValue(obj).first.isEmpty()) return mutableSetOf()
-    if (friends.getValue(obj).second == 0) return friends.getValue(obj).first
-    if (friends.getValue(obj).second == 2) return friends.getValue(obj).first
+    if (friends.getValue(obj).second) return friends.getValue(obj).first
+    var last2 = last
+    if (last == "") { last2 = obj }
     var buffer = mutableSetOf<String>()
-    friends[obj] = friends.getValue(obj).first to 2
-    if (friends.getValue(obj).first.size == 1) {
-        val buff = friends.getValue(obj).first.joinToString()
-        buffer = buffer.plus(graphFriends(friends, buff).toMutableSet()).toMutableSet()
-        buffer = buffer.plus(buff).toMutableSet()
-    } else {
-        friends.getValue(obj).first.forEach { it ->
+    buffer.addAll(friends.getValue(obj).first)
+    val iterator = buffer
+    friends[obj] = friends.getValue(obj).first to false
+        iterator.forEach { it ->
+            friends.getValue(obj).first.remove(it)
             if (it != obj) {
-                buffer = buffer.plus(graphFriends(friends, it)).toMutableSet()
+                buffer = buffer.plus(graphFriends(friends, it, last2)).toMutableSet()
                 buffer = buffer.plus(it).toMutableSet()
             }
         }
-    }
-    buffer = buffer.plus(friends.getValue(obj).first).toMutableSet()
-    friends[obj] = buffer.filter { it != obj }.toMutableSet() to 0
+    buffer = (buffer + friends.getValue(obj).first).toMutableSet()
+    if (last == obj) friends[obj] = buffer.filter { it != obj }.toMutableSet() to true
+    else friends[obj] = buffer.filter { it != obj }.toMutableSet() to false
     return buffer
 }
 
 
 fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> {
-    val buffer = mutableMapOf<String, Pair<MutableSet<String>, Int>>()
+    val buffer = mutableMapOf<String, Pair<MutableSet<String>, Boolean>>()
     friends.forEach {
         key, value ->
-        buffer[key] = value.toMutableSet() to 1
+        buffer[key] = value.toMutableSet() to false
         value.forEach {
-            if (!(friends.containsKey(it))) buffer[it] = mutableSetOf<String>() to 0
+            if (!(friends.containsKey(it))) buffer[it] = mutableSetOf<String>() to true
         }
     }
     buffer.forEach {
         key, _ ->
-        graphFriends(buffer, key)
+        graphFriends(buffer, key, "")
     }
     val ans = mutableMapOf<String, Set<String>>()
     buffer.forEach{
         key, value ->
         ans[key] = value.first
     }
-    return ans
+    return buffer.map { it.key to it.value.first }.toMap()
 }
 
 /**
