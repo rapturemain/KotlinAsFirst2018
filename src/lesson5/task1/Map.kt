@@ -277,14 +277,20 @@ fun graphFriends (friends: MutableMap<String, Pair<MutableSet<String>, Int>>, ob
     if (friends.getValue(obj).second == 2) return friends.getValue(obj).first
     var buffer = mutableSetOf<String>()
     friends[obj] = friends.getValue(obj).first to 2
-    friends.getValue(obj).first.forEach { it ->
-        if (it != obj) {
-            buffer = buffer.plus(graphFriends(friends, it)).toMutableSet()
-            buffer = buffer.plus(it).toMutableSet()
+    if (friends.getValue(obj).first.size == 1) {
+        val buff = friends.getValue(obj).first.joinToString()
+        buffer = buffer.plus(graphFriends(friends, buff).toMutableSet()).toMutableSet()
+        buffer = buffer.plus(buff).toMutableSet()
+    } else {
+        friends.getValue(obj).first.forEach { it ->
+            if (it != obj) {
+                buffer = buffer.plus(graphFriends(friends, it)).toMutableSet()
+                buffer = buffer.plus(it).toMutableSet()
+            }
         }
     }
     buffer = buffer.plus(friends.getValue(obj).first).toMutableSet()
-    friends[obj] = buffer.filter { it != obj}.toMutableSet() to 0
+    friends[obj] = buffer.filter { it != obj }.toMutableSet() to 0
     return buffer
 }
 
