@@ -3,6 +3,7 @@
 package lesson5.task1
 
 import jdk.nashorn.internal.objects.Global.Infinity
+import jdk.nashorn.internal.objects.Global.getArrayBuffer
 
 
 /**
@@ -271,48 +272,36 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *        )
  */
 
-fun graphFriends (friends: MutableMap<String, Pair<MutableSet<String>, Boolean>>, obj: String, last: String): MutableSet<String> {
-    if (friends.getValue(obj).first.isEmpty()) return mutableSetOf()
-    if (friends.getValue(obj).second) return friends.getValue(obj).first
-    var last2 = last
-    if (last == "") { last2 = obj }
-    var buffer = mutableSetOf<String>()
-    buffer.addAll(friends.getValue(obj).first)
-    val iterator = buffer
-    friends[obj] = friends.getValue(obj).first to false
-        iterator.forEach { it ->
-            friends.getValue(obj).first.remove(it)
-            if (it != obj) {
-                buffer = buffer.plus(graphFriends(friends, it, last2)).toMutableSet()
-                buffer = buffer.plus(it).toMutableSet()
-            }
-        }
-    buffer = (buffer + friends.getValue(obj).first).toMutableSet()
-    if (last == obj) friends[obj] = buffer.filter { it != obj }.toMutableSet() to true
-    else friends[obj] = buffer.filter { it != obj }.toMutableSet() to false
-    return buffer
+fun graphFriends (friends: MutableMap<String, MutableSet<String>>, obj: String): MutableSet<String> {
+    val buffer = mutableSetOf<String>()
+    var stringBuffer:String
+    while (!friends.getValue(obj).isEmpty()) {
+        stringBuffer = friends.getValue(obj).first().toString()
+        friends.getValue(obj).remove(stringBuffer)
+        buffer.add(stringBuffer)
+        buffer.addAll(graphFriends(friends, stringBuffer))
+    }
+    return buffer.toSortedSet().filter { it != obj }.toMutableSet()
 }
 
 
 fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> {
-    val buffer = mutableMapOf<String, Pair<MutableSet<String>, Boolean>>()
+    val friendsBase = mutableMapOf<String, MutableSet<String>>()
     friends.forEach {
         key, value ->
-        buffer[key] = value.toMutableSet() to false
+        friendsBase[key] = value.toMutableSet()
         value.forEach {
-            if (!(friends.containsKey(it))) buffer[it] = mutableSetOf<String>() to true
+            it ->
+            if (!friendsBase.containsKey(it)) friendsBase[it] = mutableSetOf()
         }
     }
-    buffer.forEach {
+    val friendsUpdate = friendsBase
+    val friendsBase2:Map<String, Set<String>> = friendsBase.toMap()
+    friendsBase.forEach {
         key, _ ->
-        graphFriends(buffer, key, "")
+        friendsUpdate[key] = graphFriends(friendsBase2.map { it.key to it.value.toMutableSet() }.toMap().toMutableMap(), key)
     }
-    val ans = mutableMapOf<String, Set<String>>()
-    buffer.forEach{
-        key, value ->
-        ans[key] = value.first
-    }
-    return buffer.map { it.key to it.value.first }.toMap()
+    return friendsUpdate.toMap()
 }
 
 /**
