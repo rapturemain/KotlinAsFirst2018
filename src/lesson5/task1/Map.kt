@@ -3,7 +3,6 @@
 package lesson5.task1
 
 import jdk.nashorn.internal.objects.Global.Infinity
-import jdk.nashorn.internal.objects.Global.getArrayBuffer
 
 
 /**
@@ -135,8 +134,8 @@ fun isAlphabit(left: String, right: String): Boolean {
     while (left[i] == right[i]){
         i++
         if ((i > left.length - 1) && (i > right.length - 1)) return true
-        if (i > right.length - 1) return true
-        if (i > left.length - 1) return false
+        if (i > right.length - 1) return false
+        if (i > left.length - 1) return true
     }
     return (left[i] < right[i])
 }
@@ -146,7 +145,7 @@ fun sortListOfString(list: MutableList<String>, l: Int, h: Int):MutableList<Stri
     if (l == h) return list
     if (h - l == 1) return if (!isAlphabit(list[l], list[h])) swap(list, l, h) else list
     val base = list[l]
-    var lo = l
+    var lo = l + 1
     var hi = h
     var buffer = list
     while (lo < hi){
@@ -158,7 +157,7 @@ fun sortListOfString(list: MutableList<String>, l: Int, h: Int):MutableList<Stri
             hi--
         }
     }
-    swap(buffer, l, lo)
+    swap(buffer, l, lo-1)
     if (l < hi) buffer = sortListOfString(buffer, l, hi)
     if (h > lo) buffer = sortListOfString(buffer, lo, h)
     return buffer
@@ -167,13 +166,13 @@ fun sortListOfString(list: MutableList<String>, l: Int, h: Int):MutableList<Stri
 fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> {
     val map = mutableMapOf<Int, MutableList<String>>()
     grades.forEach {
-        value, key ->
-        if (!map.containsKey(key)) map[key] = emptyList<String>().toMutableList()
-        map[key]?.add(value)
+        name, grade ->
+        if (map.containsKey(grade)) map.getValue(grade).add(name)
+        else map[grade] = mutableListOf(name)
     }
-    map.forEach{
-        key, value ->
-        map[key] = sortListOfString(value)
+    map.forEach {
+        grade, names ->
+        map[grade] = sortListOfString(names).toMutableList()
     }
     return map.toSortedMap(compareBy<Int> { it }.reversed())
 }
@@ -295,13 +294,12 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
             if (!friendsBase.containsKey(it)) friendsBase[it] = mutableSetOf()
         }
     }
-    val friendsUpdate = friendsBase
     val friendsBase2:Map<String, Set<String>> = friendsBase.toMap()
     friendsBase.forEach {
         key, _ ->
-        friendsUpdate[key] = graphFriends(friendsBase2.map { it.key to it.value.toMutableSet() }.toMap().toMutableMap(), key)
+        friendsBase[key] = graphFriends(friendsBase2.map { it.key to it.value.toMutableSet() }.toMap().toMutableMap(), key)
     }
-    return friendsUpdate.toMap()
+    return friendsBase.toMap()
 }
 
 /**
@@ -318,8 +316,9 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
  *   subtractOf(a = mutableMapOf("a" to "z"), mapOf("a" to "z"))
  *     -> a changes to mutableMapOf() aka becomes empty
  */
-fun subtractOf(a: MutableMap<String, String>, b: Map<String, String>): Unit = TODO()
+fun subtractOf(a: MutableMap<String, String>, b: Map<String, String>): Unit = a.forEach {
 
+}
 /**
  * Простая
  *
