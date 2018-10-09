@@ -370,12 +370,13 @@ fun hasAnagrams(words: List<String>): Boolean {
     val bufferList = words.toMutableList()
     var buffer = false
     words.forEach {
+        it ->
         bufferList.remove(it)
         if ((bufferList.contains(it)) || (buffer)) { // проверка на два одинаковых слова
             buffer = true
         } else {
             bufferList.forEach { that ->
-                if (it.toList().containsAll(that.toList())) buffer = true
+                if ((that.toList().containsAll(it.toList())) && (it.length == that.length)) buffer = true
             }
             bufferList.add(it)
         }
@@ -402,8 +403,11 @@ fun hasAnagrams(words: List<String>): Boolean {
  */
 fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
     var buffer = -1 to -1
+    val bufferList = list.toMutableList()
     list.forEach {
-        if (list.contains(number - it) && (number - it != it)) buffer = list.indexOf(it) to list.indexOf(number - it)
+        it ->
+        bufferList.remove(it)
+        if (bufferList.contains(number - it)) buffer = list.indexOf(it) to bufferList.indexOf(number - it) + 1
     }
     return if (buffer.first > buffer.second) buffer.second to buffer.first
            else buffer
