@@ -120,7 +120,7 @@ fun mergePhoneBooks(mapA: Map<String, String>, mapB: Map<String, String>): Map<S
  *   buildGrades(mapOf("Марат" to 3, "Семён" to 5, "Михаил" to 5))
  *     -> mapOf(5 to listOf("Семён", "Михаил"), 3 to listOf("Марат"))
  */
-fun swap(list: MutableList<String>, lo: Int, hi: Int):MutableList<String> {
+fun swap(list: MutableList<String>, lo: Int, hi: Int): MutableList<String> {
     val left = list[lo]
     list[lo] = list[hi]
     list[hi] = left
@@ -167,8 +167,8 @@ fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> {
     val map = mutableMapOf<Int, MutableList<String>>()
     grades.forEach {
         name, grade ->
-        if (map.containsKey(grade)) map.getValue(grade).add(name)
-        else map[grade] = mutableListOf(name)
+        map.getOrPut(grade) { mutableListOf() }
+        map.getValue(grade).add(name)
     }
     map.forEach {
         grade, names ->
@@ -273,9 +273,8 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
 
 fun graphFriends (friends: MutableMap<String, MutableSet<String>>, obj: String): MutableSet<String> {
     val buffer = mutableSetOf<String>()
-    var stringBuffer:String
     while (!friends.getValue(obj).isEmpty()) {
-        stringBuffer = friends.getValue(obj).first().toString()
+        val stringBuffer = friends.getValue(obj).first().toString()
         friends.getValue(obj).remove(stringBuffer)
         buffer.add(stringBuffer)
         buffer.addAll(graphFriends(friends, stringBuffer))
@@ -294,10 +293,10 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
             if (!friendsBase.containsKey(it)) friendsBase[it] = mutableSetOf()
         }
     }
-    val friendsBase2:Map<String, Set<String>> = friendsBase.toMap()
-    friendsBase.forEach {
-        key, _ ->
-        friendsBase[key] = graphFriends(friendsBase2.map { it.key to it.value.toMutableSet() }.toMap().toMutableMap(), key)
+    val friendsBase2 = friendsBase.toMap()
+    friendsBase.keys.forEach {
+        friendsBase[it] =
+                graphFriends(friendsBase2.map { it.key to it.value.toMutableSet() }.toMap().toMutableMap(), it)
     }
     return friendsBase.toMap()
 }
@@ -325,14 +324,7 @@ fun subtractOf(a: MutableMap<String, String>, b: Map<String, String>): Unit = b.
  *
  * Для двух списков людей найти людей, встречающихся в обоих списках
  */
-fun whoAreInBoth(a: List<String>, b: List<String>): List<String> {
-    val buffer = mutableListOf<String>()
-    a.forEach {
-        key ->
-        if ((b.contains(key)) && (!buffer.contains(key))) buffer.add(key)
-    }
-    return buffer.toList()
-}
+fun whoAreInBoth(a: List<String>, b: List<String>): List<String> = a.intersect(b).toList()
 
 /**
  * Средняя
@@ -343,8 +335,8 @@ fun whoAreInBoth(a: List<String>, b: List<String>): List<String> {
  * Например:
  *   canBuildFrom(listOf('a', 'b', 'o'), "baobab") -> true
  */
-fun canBuildFrom(chars: List<Char>, word: String): Boolean = TODO()
-
+fun canBuildFrom(chars: List<Char>, word: String): Boolean =
+        chars.joinToString().toLowerCase().toList().containsAll (word.toLowerCase().toList())
 /**
  * Средняя
  *
@@ -357,8 +349,14 @@ fun canBuildFrom(chars: List<Char>, word: String): Boolean = TODO()
  * Например:
  *   extractRepeats(listOf("a", "b", "a")) -> mapOf("a" to 2)
  */
-fun extractRepeats(list: List<String>): Map<String, Int> = TODO()
-
+fun extractRepeats(list: List<String>): Map<String, Int> {
+    val buffer = mutableMapOf<String, Int>()
+    list.forEach {
+        buffer.getOrPut(it) { 0 }
+        buffer[it] =  buffer.getValue(it) + 1
+    }
+    return buffer.filterValues { it > 1 }
+}
 /**
  * Средняя
  *
@@ -368,7 +366,22 @@ fun extractRepeats(list: List<String>): Map<String, Int> = TODO()
  * Например:
  *   hasAnagrams(listOf("тор", "свет", "рот")) -> true
  */
-fun hasAnagrams(words: List<String>): Boolean = TODO()
+fun hasAnagrams(words: List<String>): Boolean {
+    val bufferList = words.toMutableList()
+    var buffer = false
+    words.forEach {
+        bufferList.remove(it)
+        if ((bufferList.contains(it)) || (buffer)) { // проверка на два одинаковых слова
+            buffer = true
+        } else {
+            bufferList.forEach { that ->
+                if (it.toList().containsAll(that.toList())) buffer = true
+            }
+            bufferList.add(it)
+        }
+    }
+    return buffer
+}
 
 /**
  * Сложная
@@ -387,7 +400,14 @@ fun hasAnagrams(words: List<String>): Boolean = TODO()
  *   findSumOfTwo(listOf(1, 2, 3), 4) -> Pair(0, 2)
  *   findSumOfTwo(listOf(1, 2, 3), 6) -> Pair(-1, -1)
  */
-fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> = TODO()
+fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
+    var buffer = -1 to -1
+    list.forEach {
+        if (list.contains(number - it) && (number - it != it)) buffer = list.indexOf(it) to list.indexOf(number - it)
+    }
+    return if (buffer.first > buffer.second) buffer.second to buffer.first
+           else buffer
+}
 
 /**
  * Очень сложная
