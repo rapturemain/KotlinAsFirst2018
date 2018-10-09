@@ -238,7 +238,7 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
     var buffer: String? = null
     stuff.forEach {
         key, (type, cost) ->
-        if ((type == kind) && (max >= cost)) {
+        if ((type == kind) && (max > cost)) {
             buffer = key
             max = cost
         }
