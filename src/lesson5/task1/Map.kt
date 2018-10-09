@@ -316,13 +316,23 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
  *   subtractOf(a = mutableMapOf("a" to "z"), mapOf("a" to "z"))
  *     -> a changes to mutableMapOf() aka becomes empty
  */
-fun subtractOf(a: MutableMap<String, String>, b: Map<String, String>): Unit = TODO()
+fun subtractOf(a: MutableMap<String, String>, b: Map<String, String>): Unit = b.forEach {
+    key, value ->
+    if (a[key] == value) a.remove(key)
+}
 /**
  * Простая
  *
  * Для двух списков людей найти людей, встречающихся в обоих списках
  */
-fun whoAreInBoth(a: List<String>, b: List<String>): List<String> = TODO()
+fun whoAreInBoth(a: List<String>, b: List<String>): List<String> {
+    val buffer = mutableListOf<String>()
+    a.forEach {
+        key ->
+        if (b.contains(key)) buffer.add(key)
+    }
+    return buffer.toList()
+}
 
 /**
  * Средняя
