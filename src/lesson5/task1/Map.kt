@@ -404,10 +404,12 @@ fun hasAnagrams(words: List<String>): Boolean {
 fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
     var buffer = -1 to -1
     val bufferList = list.toMutableList()
+    var count = 0
     list.forEach {
         it ->
+        count++
         bufferList.remove(it)
-        if (bufferList.contains(number - it)) buffer = list.indexOf(it) to bufferList.indexOf(number - it) + 1 - list.indexOf(it)
+        if (bufferList.contains(number - it)) buffer = list.indexOf(it) to bufferList.indexOf(number - it) + count
     }
     return if (buffer.first > buffer.second) buffer.second to buffer.first
            else buffer
