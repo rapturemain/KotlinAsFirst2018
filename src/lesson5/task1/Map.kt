@@ -408,6 +408,7 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
         it ->
         bufferList.remove(it)
         if (bufferList.contains(number - it)) buffer = list.indexOf(it) to bufferList.indexOf(number - it) + 1
+        bufferList.add(it)
     }
     return if (buffer.first > buffer.second) buffer.second to buffer.first
            else buffer
