@@ -329,7 +329,7 @@ fun whoAreInBoth(a: List<String>, b: List<String>): List<String> {
     val buffer = mutableListOf<String>()
     a.forEach {
         key ->
-        if (b.contains(key)) buffer.add(key)
+        if ((b.contains(key) && (!buffer.contains(key))) buffer.add(key)
     }
     return buffer.toList()
 }
