@@ -436,7 +436,7 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
 
 fun tryToAddHard (map: MutableMap<String, Pair<Int, Int>>, items: Set<String>,
                   itemsToReplace: MutableSet<String>, weight: Int, cost: Int): MutableSet<String> {
-    var buffer = mutableSetOf<String>()
+    var buffer = itemsToReplace
     var totalWeightToReplace = 0
     var totalCostToReplace = 0
     itemsToReplace.forEach {
@@ -489,9 +489,6 @@ fun tryToAdd (map: MutableMap<String, Pair<Int, Int>>, items: MutableSet<String>
 }
 
 fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> {
-    //val nameTreasures = mutableSetOf<String>()
-    //val weightTreasures = mutableSetOf<Int>()
-    //val costTreasures = mutableSetOf<Int>()
     val map = treasures.toMutableMap()
     treasures.keys.forEach {
         if (map.getValue(it).first > capacity) map.remove(it)
