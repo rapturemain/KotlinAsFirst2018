@@ -499,5 +499,5 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
             key, (weight, cost) ->
             leftWeight = tryToAdd(map, items, key, weight, cost, leftWeight)
         }
-    return items.toSet()
+    return items.toSet().reversed().toSet()
 }
