@@ -336,7 +336,7 @@ fun whoAreInBoth(a: List<String>, b: List<String>): List<String> = a.intersect(b
  *   canBuildFrom(listOf('a', 'b', 'o'), "baobab") -> true
  */
 fun canBuildFrom(chars: List<Char>, word: String): Boolean =
-        chars.joinToString().toLowerCase().toList().containsAll (word.toLowerCase().toList())
+        chars.joinToString().toLowerCase().toList().containsAll(word.toLowerCase().toList())
 /**
  * Средняя
  *
@@ -352,8 +352,7 @@ fun canBuildFrom(chars: List<Char>, word: String): Boolean =
 fun extractRepeats(list: List<String>): Map<String, Int> {
     val buffer = mutableMapOf<String, Int>()
     list.forEach {
-        buffer.getOrPut(it) { 0 }
-        buffer[it] =  buffer.getValue(it) + 1
+        buffer[it] = buffer.getOrDefault(it, 0) + 1
     }
     return buffer.filterValues { it > 1 }
 }
@@ -434,4 +433,74 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
  *     450
  *   ) -> emptySet()
  */
-fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> = TODO()
+
+fun tryToAddHard (map: MutableMap<String, Pair<Int, Int>>, items: Set<String>,
+                  itemsToReplace: MutableSet<String>, weight: Int, cost: Int): MutableSet<String> {
+    var buffer = mutableSetOf<String>()
+    var totalWeightToReplace = 0
+    var totalCostToReplace = 0
+    itemsToReplace.forEach {
+        val (weightI, costI) = map.getValue(it)
+        totalWeightToReplace += weightI
+        totalCostToReplace += costI
+    }
+    if ((totalWeightToReplace > weight) && (totalCostToReplace <= cost)
+            || (totalWeightToReplace >= weight) && (totalCostToReplace < cost)) return buffer
+    if (items.size > itemsToReplace.size) {
+        items.forEach {
+            if (!itemsToReplace.contains(it)) {
+                buffer.add(it)
+                buffer = tryToAddHard(map, items, buffer, weight, cost)
+                if (buffer.isNotEmpty()) return buffer
+                buffer.remove(it)
+            }
+        }
+    }
+    return emptySet<String>().toMutableSet()
+}
+
+fun tryToAdd (map: MutableMap<String, Pair<Int, Int>>, items: MutableSet<String>,
+              key: String, weight: Int, cost: Int, leftWeight: Int): Int {
+   if (weight <= leftWeight) {
+       items.add(key)
+       return leftWeight - weight
+   } else {
+       for (it in items) {
+           val (weightI, costI) = map.getValue(it)
+           if ((weightI > weight) && (costI <= cost) || (weightI >= weight) && (costI < cost)) {
+               items.remove(it)
+               items.add(key)
+               return leftWeight - weight + weightI
+           } else {
+               val buffer = tryToAddHard(map, items, emptySet<String>().toMutableSet(), weight, cost)
+               if (buffer.isNotEmpty()) {
+                   var weightReplaced = 0
+                   buffer.forEach {
+                       items.remove(it)
+                       weightReplaced += map.getValue(it).first
+                   }
+                   items.add(key)
+                   return leftWeight - weight + weightReplaced
+               }
+           }
+       }
+       return leftWeight
+   }
+}
+
+fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> {
+    //val nameTreasures = mutableSetOf<String>()
+    //val weightTreasures = mutableSetOf<Int>()
+    //val costTreasures = mutableSetOf<Int>()
+    val map = treasures.toMutableMap()
+    treasures.keys.forEach {
+        if (map.getValue(it).first > capacity) map.remove(it)
+    }
+    var leftWeight = capacity
+    val items = mutableSetOf<String>()
+    map.forEach {
+            key, (weight, cost) ->
+            leftWeight = tryToAdd(map, items, key, weight, cost, leftWeight)
+        }
+    return items.toSet()
+}
