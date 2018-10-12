@@ -439,25 +439,28 @@ fun findBestToReplace(map: Map<String, Pair<Int, Int>>, setToReplace: Set<String
     var buffer = ""
     setToReplace.forEach {
         val (weight, cost) = map.getValue(it)
-        if (cost - weight >= max) {
-            max = cost - weight
+        if (weight - cost >= max) {
+            max = weight - cost
             buffer = it
         }
     }
     return buffer
 }
 
-fun removeL (map: Map<String, Pair<Int, Int>>, bufferSetToReplace: MutableSet<String>, leftWeight: Int): Int{
+fun removeL (map: Map<String, Pair<Int, Int>>, bufferSetToReplace: MutableSet<String>, leftWeight: Int): MutableSet<String>{
+    val bufferSet = bufferSetToReplace
+    var min = Int.MAX_VALUE
     while (true) {
-        var min = Int.MAX_VALUE
         var buffer = ""
-        bufferSetToReplace.forEach {
+        bufferSet.forEach {
             val weight = map.getValue(it).first
-            if (min >= weight) min = weight
-            buffer = it
+            if (min >= weight) {
+                min = weight
+                buffer = it
+            }
         }
-        if ((buffer != "") && (leftWeight - map.getValue(buffer).first >= 0)) bufferSetToReplace.remove(buffer)
-        else return 0
+        if ((buffer != "") && (leftWeight - map.getValue(buffer).first >= 0)) bufferSet.remove(buffer)
+        else return bufferSet
     }
 }
 
@@ -497,7 +500,7 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
                     if (weightI - weight > costI - cost) setToReplace.add(it)
                 }
                 if (setToReplace.isNotEmpty()) {
-                    val bufferSetToReplace = mutableSetOf<String>()
+                    var bufferSetToReplace = mutableSetOf<String>()
                     var totalWeightToReplace = 0
                     while ((leftWeight + totalWeightToReplace < weight) && (setToReplace.isNotEmpty())) {
                         val buffer = findBestToReplace(map, setToReplace)
@@ -505,7 +508,7 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
                         setToReplace.remove(buffer)
                         bufferSetToReplace.add(buffer)
                     }
-                    removeL(map, bufferSetToReplace, leftWeight + totalWeightToReplace - weight)
+                    bufferSetToReplace = removeL(map, bufferSetToReplace, leftWeight + totalWeightToReplace - weight)
                     if (leftWeight + totalWeightToReplace >= weight) {
                         items.add(key)
                         items.removeAll(bufferSetToReplace)
