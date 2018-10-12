@@ -438,13 +438,27 @@ fun findBestToReplace(map: Map<String, Pair<Int, Int>>, setToReplace: Set<String
     var max = 0
     var buffer = ""
     setToReplace.forEach {
-        val weight = map.getValue(it).first
-        if (weight >= max) {
-            max = weight
+        val (weight, cost) = map.getValue(it)
+        if (cost - weight >= max) {
+            max = cost - weight
             buffer = it
         }
     }
     return buffer
+}
+
+fun removeL (map: Map<String, Pair<Int, Int>>, bufferSetToReplace: MutableSet<String>, leftWeight: Int): Int{
+    while (true) {
+        var min = Int.MAX_VALUE
+        var buffer = ""
+        bufferSetToReplace.forEach {
+            val weight = map.getValue(it).first
+            if (min >= weight) min = weight
+            buffer = it
+        }
+        if (leftWeight - map.getValue(buffer).first >= 0) bufferSetToReplace.remove(buffer)
+        else return 0
+    }
 }
 
 fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> {
@@ -491,6 +505,7 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
                         setToReplace.remove(buffer)
                         bufferSetToReplace.add(buffer)
                     }
+                    removeL(map, bufferSetToReplace, leftWeight + totalWeightToReplace - weight)
                     if (leftWeight + totalWeightToReplace >= weight) {
                         items.add(key)
                         items.removeAll(bufferSetToReplace)
