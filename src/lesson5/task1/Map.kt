@@ -456,7 +456,7 @@ fun removeL (map: Map<String, Pair<Int, Int>>, bufferSetToReplace: MutableSet<St
             if (min >= weight) min = weight
             buffer = it
         }
-        if (leftWeight - map.getValue(buffer).first >= 0) bufferSetToReplace.remove(buffer)
+        if ((buffer != "") && (leftWeight - map.getValue(buffer).first >= 0)) bufferSetToReplace.remove(buffer)
         else return 0
     }
 }
