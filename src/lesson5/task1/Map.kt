@@ -455,50 +455,50 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
     var leftWeight = capacity
     val items = mutableSetOf<String>()
     map.forEach {
-            key, (weight, cost) ->
-            if (weight <= leftWeight) {
-                items.add(key)
-                leftWeight -= weight
+        key, (weight, cost) ->
+        if (weight <= leftWeight) {
+            items.add(key)
+            leftWeight -= weight
+        }
+        else {
+            var bestToReplace = ""
+            items.forEach {
+                val (weightI, costI) = map.getValue(it)
+                if ((weightI >= weight) && (costI < cost) ||
+                        (weightI > weight) && (costI <= cost)) {
+                    if (bestToReplace != "") {
+                        val (weightB, costB) = map.getValue(bestToReplace)
+                        if ((weightB > weight) && (costB < cost)) bestToReplace = it
+                    } else bestToReplace = it
+                }
             }
-            else {
-                var bestToReplace = ""
+            if (bestToReplace != "") {
+                items.remove(bestToReplace)
+                items.add(key)
+                leftWeight += map.getValue(bestToReplace).first - weight
+            } else {
+                val setToReplace = mutableSetOf<String>()
                 items.forEach {
                     val (weightI, costI) = map.getValue(it)
-                    if ((weightI >= weight) && (costI < cost) ||
-                            (weightI > weight) && (costI <= cost)) {
-                        if (bestToReplace != "") {
-                            val (weightB, costB) = map.getValue(bestToReplace)
-                            if ((weightB > weight) && (costB < cost)) bestToReplace = it
-                        } else bestToReplace = it
-                    }
+                    if (weightI - weight > costI - cost) setToReplace.add(it)
                 }
-                if (bestToReplace != "") {
-                    items.remove(bestToReplace)
-                    items.add(key)
-                    leftWeight += map.getValue(bestToReplace).first - weight
-                } else {
-                    val setToReplace = mutableSetOf<String>()
-                    items.forEach {
-                        val (weightI, costI) = map.getValue(it)
-                        if (weightI - weight > costI - cost) setToReplace.add(it)
+                if (setToReplace.isNotEmpty()) {
+                    val bufferSetToReplace = mutableSetOf<String>()
+                    var totalWeightToReplace = 0
+                    while ((leftWeight + totalWeightToReplace < weight) && (setToReplace.isNotEmpty())) {
+                        val buffer = findBestToReplace(map, setToReplace)
+                        totalWeightToReplace += map.getValue(buffer).first
+                        setToReplace.remove(buffer)
+                        bufferSetToReplace.add(buffer)
                     }
-                    if (setToReplace.isNotEmpty()) {
-                        val bufferSetToReplace = mutableSetOf<String>()
-                        var totalWeightToReplace = 0
-                        while ((leftWeight + totalWeightToReplace < weight) && (setToReplace.isNotEmpty())) {
-                            val buffer = findBestToReplace(map, setToReplace)
-                            totalWeightToReplace += map.getValue(buffer).first
-                            setToReplace.remove(buffer)
-                            bufferSetToReplace.add(buffer)
-                        }
-                        if (leftWeight + totalWeightToReplace >= weight) {
-                            items.add(key)
-                            items.removeAll(bufferSetToReplace)
-                            leftWeight += totalWeightToReplace - weight
-                        }
+                    if (leftWeight + totalWeightToReplace >= weight) {
+                        items.add(key)
+                        items.removeAll(bufferSetToReplace)
+                        leftWeight += totalWeightToReplace - weight
                     }
                 }
             }
         }
+    }
     return items.toSet().reversed().toSet()
 }
