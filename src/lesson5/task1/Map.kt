@@ -434,58 +434,17 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
  *   ) -> emptySet()
  */
 
-fun tryToAddHard (map: MutableMap<String, Pair<Int, Int>>, items: Set<String>,
-                  itemsToReplace: MutableSet<String>, weight: Int, cost: Int): MutableSet<String> {
-    var buffer = itemsToReplace
-    var totalWeightToReplace = 0
-    var totalCostToReplace = 0
-    itemsToReplace.forEach {
-        val (weightI, costI) = map.getValue(it)
-        totalWeightToReplace += weightI
-        totalCostToReplace += costI
-    }
-    if ((totalWeightToReplace > weight) && (totalCostToReplace <= cost)
-            || (totalWeightToReplace >= weight) && (totalCostToReplace < cost)) return buffer
-    if (items.size > itemsToReplace.size) {
-        items.forEach {
-            if (!itemsToReplace.contains(it)) {
-                buffer.add(it)
-                buffer = tryToAddHard(map, items, buffer, weight, cost)
-                if (buffer.isNotEmpty()) return buffer
-                buffer.remove(it)
-            }
+fun findBestToReplace(map: Map<String, Pair<Int, Int>>, setToReplace: Set<String>): String {
+    var max = 0
+    var buffer = ""
+    setToReplace.forEach {
+        val weight = map.getValue(it).first
+        if (weight >= max) {
+            max = weight
+            buffer = it
         }
     }
-    return emptySet<String>().toMutableSet()
-}
-
-fun tryToAdd (map: MutableMap<String, Pair<Int, Int>>, items: MutableSet<String>,
-              key: String, weight: Int, cost: Int, leftWeight: Int): Int {
-   if (weight <= leftWeight) {
-       items.add(key)
-       return leftWeight - weight
-   } else {
-       for (it in items) {
-           val (weightI, costI) = map.getValue(it)
-           if ((weightI > weight) && (costI <= cost) || (weightI >= weight) && (costI < cost)) {
-               items.remove(it)
-               items.add(key)
-               return leftWeight - weight + weightI
-           } else {
-               val buffer = tryToAddHard(map, items, emptySet<String>().toMutableSet(), weight, cost)
-               if (buffer.isNotEmpty()) {
-                   var weightReplaced = 0
-                   buffer.forEach {
-                       items.remove(it)
-                       weightReplaced += map.getValue(it).first
-                   }
-                   items.add(key)
-                   return leftWeight - weight + weightReplaced
-               }
-           }
-       }
-       return leftWeight
-   }
+    return buffer
 }
 
 fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> {
@@ -497,7 +456,49 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
     val items = mutableSetOf<String>()
     map.forEach {
             key, (weight, cost) ->
-            leftWeight = tryToAdd(map, items, key, weight, cost, leftWeight)
+            if (weight <= leftWeight) {
+                items.add(key)
+                leftWeight -= weight
+            }
+            else {
+                var bestToReplace = ""
+                items.forEach {
+                    val (weightI, costI) = map.getValue(it)
+                    if ((weightI >= weight) && (costI < cost) ||
+                            (weightI > weight) && (costI <= cost)) {
+                        if (bestToReplace != "") {
+                            val (weightB, costB) = map.getValue(bestToReplace)
+                            if ((weightB > weight) && (costB < cost)) bestToReplace = it
+                        } else bestToReplace = it
+                    }
+                }
+                if (bestToReplace != "") {
+                    items.remove(bestToReplace)
+                    items.add(key)
+                    leftWeight += map.getValue(bestToReplace).first - weight
+                } else {
+                    val setToReplace = mutableSetOf<String>()
+                    items.forEach {
+                        val (weightI, costI) = map.getValue(it)
+                        if (weightI - weight > costI - cost) setToReplace.add(it)
+                    }
+                    if (setToReplace.isNotEmpty()) {
+                        val bufferSetToReplace = mutableSetOf<String>()
+                        var totalWeightToReplace = 0
+                        while ((leftWeight + totalWeightToReplace < weight) && (setToReplace.isNotEmpty())) {
+                            val buffer = findBestToReplace(map, setToReplace)
+                            totalWeightToReplace += map.getValue(buffer).first
+                            setToReplace.remove(buffer)
+                            bufferSetToReplace.add(buffer)
+                        }
+                        if (leftWeight + totalWeightToReplace >= weight) {
+                            items.add(key)
+                            items.removeAll(bufferSetToReplace)
+                            leftWeight += totalWeightToReplace - weight
+                        }
+                    }
+                }
+            }
         }
     return items.toSet().reversed().toSet()
 }
