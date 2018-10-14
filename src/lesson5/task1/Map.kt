@@ -3,6 +3,7 @@
 package lesson5.task1
 
 import jdk.nashorn.internal.objects.Global.Infinity
+import jdk.nashorn.internal.objects.Global.setArrayBuffer
 
 
 /**
@@ -447,20 +448,34 @@ fun findBestToReplace(map: Map<String, Pair<Int, Int>>, setToReplace: Set<String
     return buffer
 }
 
-fun removeL (map: Map<String, Pair<Int, Int>>, bufferSetToReplace: MutableSet<String>, leftWeight: Int): MutableSet<String>{
+fun removeL (map: Map<String, Pair<Int, Int>>, bufferSetToReplace: MutableSet<String>, leftWeigh: Int): MutableSet<String>{
+    var leftWeight = leftWeigh
     val bufferSet = bufferSetToReplace
-    var min = Int.MAX_VALUE
+    var minWeight = Int.MAX_VALUE
+    var minminWeight = Int.MAX_VALUE
+    var maxCost = Int.MIN_VALUE
     while (true) {
         var buffer = ""
+        var buffermin = ""
         bufferSet.forEach {
-            val weight = map.getValue(it).first
-            if (min >= weight) {
-                min = weight
+            val (weight, cost) = map.getValue(it)
+            if ((minWeight - maxCost >= weight - cost) || (leftWeight - weight > 0) && (maxCost < cost)) {
+                minWeight = weight
+                maxCost = cost
                 buffer = it
             }
+            if (minminWeight >= weight) {
+                buffermin = it
+                minminWeight = weight
+            }
         }
-        if ((buffer != "") && (leftWeight - map.getValue(buffer).first >= 0)) bufferSet.remove(buffer)
-        else return bufferSet
+        leftWeight -= if ((buffer != "") && (leftWeight - map.getValue(buffer).first >= 0)) {
+            bufferSet.remove(buffer)
+            map.getValue(buffer).first
+        } else if ((buffermin != "") && (leftWeight - map.getValue(buffermin).first >= 0)) {
+            bufferSet.remove(buffermin)
+            map.getValue(buffermin).first
+        } else return bufferSet
     }
 }
 
