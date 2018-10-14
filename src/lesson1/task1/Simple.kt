@@ -1,11 +1,7 @@
 @file:Suppress("UNUSED_PARAMETER")
 package lesson1.task1
 
-import lesson3.task1.factorial
-import lesson3.task1.fib
-import lesson3.task1.isEven
 import kotlin.math.*
-import lesson3.task1.*
 
 /**
  * Пример

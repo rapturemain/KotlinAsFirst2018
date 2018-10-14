@@ -3,7 +3,7 @@
 package lesson5.task1
 
 import jdk.nashorn.internal.objects.Global.Infinity
-import jdk.nashorn.internal.objects.Global.setArrayBuffer
+import lesson3.task1.squareBetweenExists
 
 
 /**
@@ -436,12 +436,12 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
  */
 
 fun findBestToReplace(map: Map<String, Pair<Int, Int>>, setToReplace: Set<String>): String {
-    var max = 0
+    var max = Double.MAX_VALUE
     var buffer = ""
     setToReplace.forEach {
         val (weight, cost) = map.getValue(it)
-        if (weight - cost >= max) {
-            max = weight - cost
+        if (cost.toDouble() / weight <= max * 1.10) {
+            max = cost.toDouble() / weight
             buffer = it
         }
     }
@@ -450,16 +450,15 @@ fun findBestToReplace(map: Map<String, Pair<Int, Int>>, setToReplace: Set<String
 
 fun removeL (map: Map<String, Pair<Int, Int>>, bufferSetToReplace: MutableSet<String>, leftWeigh: Int): MutableSet<String>{
     var leftWeight = leftWeigh
-    val bufferSet = bufferSetToReplace
     var minWeight = Int.MAX_VALUE
     var minminWeight = Int.MAX_VALUE
     var maxCost = Int.MIN_VALUE
     while (true) {
         var buffer = ""
         var buffermin = ""
-        bufferSet.forEach {
+        bufferSetToReplace.forEach {
             val (weight, cost) = map.getValue(it)
-            if ((minWeight - maxCost >= weight - cost) || (leftWeight - weight > 0) && (maxCost < cost)) {
+            if ((maxCost / minWeight.toDouble() <= cost / weight.toDouble()) || (leftWeight - weight > 0) && (maxCost < cost)) {
                 minWeight = weight
                 maxCost = cost
                 buffer = it
@@ -470,12 +469,12 @@ fun removeL (map: Map<String, Pair<Int, Int>>, bufferSetToReplace: MutableSet<St
             }
         }
         leftWeight -= if ((buffer != "") && (leftWeight - map.getValue(buffer).first >= 0)) {
-            bufferSet.remove(buffer)
+            bufferSetToReplace.remove(buffer)
             map.getValue(buffer).first
         } else if ((buffermin != "") && (leftWeight - map.getValue(buffermin).first >= 0)) {
-            bufferSet.remove(buffermin)
+            bufferSetToReplace.remove(buffermin)
             map.getValue(buffermin).first
-        } else return bufferSet
+        } else return bufferSetToReplace
     }
 }
 
@@ -493,7 +492,7 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
             leftWeight -= weight
         }
         else {
-            var bestToReplace = ""
+            /* var bestToReplace = ""
             items.forEach {
                 val (weightI, costI) = map.getValue(it)
                 if ((weightI >= weight) && (costI < cost) ||
@@ -508,11 +507,11 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
                 items.remove(bestToReplace)
                 items.add(key)
                 leftWeight += map.getValue(bestToReplace).first - weight
-            } else {
+            } else { */
                 val setToReplace = mutableSetOf<String>()
                 items.forEach {
                     val (weightI, costI) = map.getValue(it)
-                    if (weightI - weight > costI - cost) setToReplace.add(it)
+                    if (weightI - weight >= costI - cost) setToReplace.add(it)
                 }
                 if (setToReplace.isNotEmpty()) {
                     var bufferSetToReplace = mutableSetOf<String>()
@@ -532,6 +531,6 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
                 }
             }
         }
-    }
+
     return items.toSet().reversed().toSet()
 }
