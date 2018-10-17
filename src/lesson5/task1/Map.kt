@@ -169,7 +169,7 @@ fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> {
     val map = mutableMapOf<Int, MutableList<String>>()
     grades.forEach {
         name, grade ->
-        map.getOrPut(grade) { mutableListOf() }
+        map.getOrPut(grade, ::mutableListOf)
         map.getValue(grade).add(name)
     }
     map.forEach {
