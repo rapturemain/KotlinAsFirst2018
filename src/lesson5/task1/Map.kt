@@ -4,6 +4,7 @@ package lesson5.task1
 
 import jdk.nashorn.internal.objects.Global.Infinity
 import lesson3.task1.squareBetweenExists
+import kotlin.math.abs
 
 
 /**
@@ -440,10 +441,19 @@ fun findBestToReplace(map: Map<String, Pair<Int, Int>>, setToReplace: Set<String
     var buffer = ""
     setToReplace.forEach {
         val (weight, cost) = map.getValue(it)
-        if (cost.toDouble() / weight <= max * 1.10) {
-            max = cost.toDouble() / weight
-            buffer = it
-        }
+        val coeff = cost.toDouble() / weight
+        if (buffer != "" ) {
+            val (weightI, costI) = map.getValue(buffer)
+            if ((coeff <= max) || (weight - weightI > 0) && (((weight - weightI) * coeff) >= cost - costI)
+            || (weight - weightI <= 0) && (((weightI - weight) * coeff) <= costI - cost)) {
+                max = coeff
+                buffer = it
+            }
+        } else
+            if (coeff <= max) {
+                        max = coeff
+                        buffer = it
+                    }
     }
     return buffer
 }
@@ -492,45 +502,51 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
             leftWeight -= weight
         }
         else {
-            /* var bestToReplace = ""
+            val setToReplace = mutableSetOf<String>()
             items.forEach {
                 val (weightI, costI) = map.getValue(it)
-                if ((weightI >= weight) && (costI < cost) ||
-                        (weightI > weight) && (costI <= cost)) {
-                    if (bestToReplace != "") {
-                        val (weightB, costB) = map.getValue(bestToReplace)
-                        if ((weightB > weight) && (costB < cost)) bestToReplace = it
-                    } else bestToReplace = it
-                }
+                if (weightI - weight >= costI - cost) setToReplace.add(it)
             }
-            if (bestToReplace != "") {
-                items.remove(bestToReplace)
-                items.add(key)
-                leftWeight += map.getValue(bestToReplace).first - weight
-            } else { */
-                val setToReplace = mutableSetOf<String>()
-                items.forEach {
-                    val (weightI, costI) = map.getValue(it)
-                    if (weightI - weight >= costI - cost) setToReplace.add(it)
+            if (setToReplace.isNotEmpty()) {
+                var bufferSetToReplace = mutableSetOf<String>()
+                var totalWeightToReplace = 0
+                while ((leftWeight + totalWeightToReplace < weight) && (setToReplace.isNotEmpty())) {
+                    val buffer = findBestToReplace(map, setToReplace)
+                    totalWeightToReplace += map.getValue(buffer).first
+                    setToReplace.remove(buffer)
+                    bufferSetToReplace.add(buffer)
                 }
-                if (setToReplace.isNotEmpty()) {
-                    var bufferSetToReplace = mutableSetOf<String>()
-                    var totalWeightToReplace = 0
-                    while ((leftWeight + totalWeightToReplace < weight) && (setToReplace.isNotEmpty())) {
-                        val buffer = findBestToReplace(map, setToReplace)
-                        totalWeightToReplace += map.getValue(buffer).first
-                        setToReplace.remove(buffer)
-                        bufferSetToReplace.add(buffer)
-                    }
-                    bufferSetToReplace = removeL(map, bufferSetToReplace, leftWeight + totalWeightToReplace - weight)
-                    if (leftWeight + totalWeightToReplace >= weight) {
-                        items.add(key)
-                        items.removeAll(bufferSetToReplace)
-                        leftWeight += totalWeightToReplace - weight
-                    }
+                bufferSetToReplace = removeL(map, bufferSetToReplace, leftWeight + totalWeightToReplace - weight)
+                if (leftWeight + totalWeightToReplace >= weight) {
+                    items.add(key)
+                    items.removeAll(bufferSetToReplace)
+                    leftWeight += totalWeightToReplace - weight
                 }
             }
         }
-
+    }
+    var toReplace = ""
+    var toAdd = ""
+    map.forEach {
+        key, (weight, cost) ->
+        if (!items.contains(key)) {
+            items.forEach {
+                if (toReplace == "") {
+                    if ((leftWeight + map.getValue(it).first >= weight) && (map.getValue(it).second <= cost)) {
+                        toReplace = it
+                        toAdd = key
+                    }
+                } else if ((leftWeight + map.getValue(it).first >= weight) && (map.getValue(it).second <= cost)
+                && (leftWeight + map.getValue(toReplace).first >= weight) && (map.getValue(toReplace).second <= cost)) {
+                    toReplace = it
+                    toAdd = key
+                }
+            }
+        }
+    }
+    if (toReplace != "") {
+        items.remove(toReplace)
+        items.add(toAdd)
+    }
     return items.toSet().reversed().toSet()
 }
