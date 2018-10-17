@@ -449,11 +449,10 @@ fun findBestToReplace(map: Map<String, Pair<Int, Int>>, setToReplace: Set<String
                 max = coeff
                 buffer = it
             }
-        } else
-            if (coeff <= max) {
+        } else if (coeff <= max) {
                         max = coeff
                         buffer = it
-                    }
+        }
     }
     return buffer
 }
@@ -505,7 +504,8 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
             val setToReplace = mutableSetOf<String>()
             items.forEach {
                 val (weightI, costI) = map.getValue(it)
-                if (weightI - weight >= costI - cost) setToReplace.add(it)
+                if ((weightI >= weight) && (weightI - weight >= costI - cost)
+                || (weightI < weight) && (weight - weightI <= cost - costI)) setToReplace.add(it)
             }
             if (setToReplace.isNotEmpty()) {
                 var bufferSetToReplace = mutableSetOf<String>()
