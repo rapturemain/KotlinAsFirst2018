@@ -532,12 +532,12 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
         if (!items.contains(key)) {
             items.forEach {
                 if (toReplace == "") {
-                    if ((leftWeight + map.getValue(it).first >= weight) && (map.getValue(it).second <= cost)) {
+                    if ((leftWeight + map.getValue(it).first >= weight) && (map.getValue(it).second < cost)) {
                         toReplace = it
                         toAdd = key
                     }
-                } else if ((leftWeight + map.getValue(it).first >= weight) && (map.getValue(it).second <= cost)
-                && (leftWeight + map.getValue(toReplace).first >= weight) && (map.getValue(toReplace).second <= cost)) {
+                } else if ((leftWeight + map.getValue(it).first >= weight) && (map.getValue(it).second < cost)
+                && (leftWeight + map.getValue(toAdd).first >= weight) && (map.getValue(toAdd).second <= cost)) {
                     toReplace = it
                     toAdd = key
                 }
