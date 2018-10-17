@@ -517,6 +517,10 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
                     bufferSetToReplace.add(buffer)
                 }
                 bufferSetToReplace = removeL(map, bufferSetToReplace, leftWeight + totalWeightToReplace - weight)
+                totalWeightToReplace = 0
+                bufferSetToReplace.forEach {
+                    totalWeightToReplace += map.getValue(it).first
+                }
                 if (leftWeight + totalWeightToReplace >= weight) {
                     items.add(key)
                     items.removeAll(bufferSetToReplace)
