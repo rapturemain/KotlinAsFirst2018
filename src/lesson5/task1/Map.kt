@@ -31,6 +31,7 @@ fun shoppingListCost(
 /**
  * Пример
  *
+ 
  * Для набора "имя"-"номер телефона" `phoneBook` оставить только такие пары,
  * для которых телефон начинается с заданного кода страны `countryCode`
  */
@@ -488,6 +489,32 @@ fun removeL (map: Map<String, Pair<Int, Int>>, bufferSetToReplace: MutableSet<St
 }
 
 fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> {
+    val items = treasures.keys.toMutableSet()
+    var totalWeight = 0
+    treasures.forEach {
+        key, (weight, _) ->
+        if (weight > capacity) items.remove(key)
+        else totalWeight += weight
+    }
+    while (totalWeight > capacity) {
+        worst = ""
+        worstWeight = Int.MIN_VALUE
+        worstCost = Int.MAX_VALUE
+        items.forEach {
+            val cost = treasures.getValue(it).second
+            if (cost < worstCost) {
+                worstCost = cost
+                worst = it
+                worstWeight = treasures.getValue(it).first
+            }
+        }
+        if (totalWeight - worstWeight >= capacity) {
+            items.remove(worst)
+            totalWeight -= worstWeight
+        } else {
+            
+        }
+    }
     val map = treasures.toMutableMap()
     treasures.keys.forEach {
         if (map.getValue(it).first > capacity) map.remove(it)
