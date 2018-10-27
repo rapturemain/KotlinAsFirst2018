@@ -169,8 +169,7 @@ fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> {
     val map = mutableMapOf<Int, MutableList<String>>()
     grades.forEach {
         name, grade ->
-        map.getOrPut(grade, ::mutableListOf)
-        map.getValue(grade).add(name)
+        map.getOrPut(grade, ::mutableListOf).add(name)
     }
     map.forEach {
         grade, names ->
@@ -436,121 +435,57 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
  *   ) -> emptySet()
  */
 
-fun findBestToReplace(map: Map<String, Pair<Int, Int>>, setToReplace: Set<String>): String {
-    var max = Double.MAX_VALUE
-    var buffer = ""
-    setToReplace.forEach {
-        val (weight, cost) = map.getValue(it)
-        val coeff = cost.toDouble() / weight
-        if (buffer != "" ) {
-            val (weightI, costI) = map.getValue(buffer)
-            if ((coeff <= max) || (weight - weightI > 0) && (((weight - weightI) * coeff) >= cost - costI)
-            || (weight - weightI <= 0) && (((weightI - weight) * coeff) <= costI - cost)) {
-                max = coeff
-                buffer = it
+fun findToDrop (treasures: Map<String, Pair<Int, Int>>, items: Set<String>, leftWeight: Int): List<String> {
+    if (items.isNotEmpty()) {
+        var worst = ""
+        var worstWeight = Int.MIN_VALUE
+        var worstCost = Int.MAX_VALUE
+        val bigObj = mutableListOf<String>()
+        items.forEach {
+            val (weight, cost) = treasures.getValue(it)
+            when {
+                (leftWeight - weight < 0) -> {
+                    bigObj.add(it)
+                }
+                (weight - worstWeight.toDouble() > cost - worstCost.toDouble()) -> {
+                    worst = it
+                    worstWeight = weight
+                    worstCost = cost
+                }
             }
-        } else if (coeff <= max) {
-                        max = coeff
-                        buffer = it
         }
-    }
-    return buffer
-}
+        val worstList = mutableListOf(worst)
+        if (leftWeight - worstWeight.toDouble() > 0) {
+            val bufferSet = items.toSet().toMutableSet()
 
-fun removeL (map: Map<String, Pair<Int, Int>>, bufferSetToReplace: MutableSet<String>, leftWeigh: Int): MutableSet<String>{
-    var leftWeight = leftWeigh
-    var minWeight = Int.MAX_VALUE
-    var minminWeight = Int.MAX_VALUE
-    var maxCost = Int.MIN_VALUE
-    while (true) {
-        var buffer = ""
-        var buffermin = ""
-        bufferSetToReplace.forEach {
-            val (weight, cost) = map.getValue(it)
-            if ((maxCost / minWeight.toDouble() <= cost / weight.toDouble()) || (leftWeight - weight > 0) && (maxCost < cost)) {
-                minWeight = weight
-                maxCost = cost
-                buffer = it
-            }
-            if (minminWeight >= weight) {
-                buffermin = it
-                minminWeight = weight
+            bufferSet.remove(worst)
+            worstList.addAll(findToDrop(treasures, bufferSet, leftWeight - worstWeight))
+        }
+        val listCost = worstList.fold(0) { prev, it -> prev + treasures.getValue(it).second }
+        worstCost = Int.MAX_VALUE
+        bigObj.forEach {
+            val cost = treasures.getValue(it).second
+            if (cost < worstCost) {
+                worstCost = cost
+                worst = it
             }
         }
-        leftWeight -= if ((buffer != "") && (leftWeight - map.getValue(buffer).first >= 0)) {
-            bufferSetToReplace.remove(buffer)
-            map.getValue(buffer).first
-        } else if ((buffermin != "") && (leftWeight - map.getValue(buffermin).first >= 0)) {
-            bufferSetToReplace.remove(buffermin)
-            map.getValue(buffermin).first
-        } else return bufferSetToReplace
-    }
+        return if (worstCost > listCost) worstList
+        else {
+            worstList.clear()
+            worstList.add(worst)
+            worstList
+        }
+    } else return emptyList()
 }
 
 fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> {
-    val map = treasures.toMutableMap()
-    treasures.keys.forEach {
-        if (map.getValue(it).first > capacity) map.remove(it)
+    val items = treasures.keys.filter { treasures.getValue(it).first <= capacity }.toMutableSet()
+    var totalWeight = items.fold(0) { prev, it -> prev + treasures.getValue(it).first }
+    while (totalWeight > capacity) {
+        val worst = findToDrop(treasures, items, totalWeight - capacity)
+        items.removeAll(worst)
+        totalWeight -= worst.fold(0) { prev, it -> prev + treasures.getValue(it).first }
     }
-    var leftWeight = capacity
-    val items = mutableSetOf<String>()
-    map.forEach {
-        key, (weight, cost) ->
-        if (weight <= leftWeight) {
-            items.add(key)
-            leftWeight -= weight
-        }
-        else {
-            val setToReplace = mutableSetOf<String>()
-            items.forEach {
-                val (weightI, costI) = map.getValue(it)
-                if ((weightI >= weight) && (weightI - weight >= costI - cost)
-                || (weightI < weight) && (weight - weightI <= cost - costI)) setToReplace.add(it)
-            }
-            if (setToReplace.isNotEmpty()) {
-                var bufferSetToReplace = mutableSetOf<String>()
-                var totalWeightToReplace = 0
-                while ((leftWeight + totalWeightToReplace < weight) && (setToReplace.isNotEmpty())) {
-                    val buffer = findBestToReplace(map, setToReplace)
-                    totalWeightToReplace += map.getValue(buffer).first
-                    setToReplace.remove(buffer)
-                    bufferSetToReplace.add(buffer)
-                }
-                bufferSetToReplace = removeL(map, bufferSetToReplace, leftWeight + totalWeightToReplace - weight)
-                totalWeightToReplace = 0
-                bufferSetToReplace.forEach {
-                    totalWeightToReplace += map.getValue(it).first
-                }
-                if (leftWeight + totalWeightToReplace >= weight) {
-                    items.add(key)
-                    items.removeAll(bufferSetToReplace)
-                    leftWeight += totalWeightToReplace - weight
-                }
-            }
-        }
-    }
-    var toReplace = ""
-    var toAdd = ""
-    map.forEach {
-        key, (weight, cost) ->
-        if (!items.contains(key)) {
-            items.forEach {
-                if (toReplace == "") {
-                    if ((leftWeight + map.getValue(it).first >= weight) && (map.getValue(it).second < cost)) {
-                        toReplace = it
-                        toAdd = key
-                    }
-                } else if ((leftWeight + map.getValue(it).first >= weight) && (map.getValue(it).second < cost)
-                && (leftWeight + map.getValue(toAdd).first >= weight) && (map.getValue(toAdd).second <= cost)) {
-                    toReplace = it
-                    toAdd = key
-                }
-            }
-        }
-    }
-    if (toReplace != "") {
-        items.remove(toReplace)
-        items.add(toAdd)
-    }
-    return items.toSet().reversed().toSet()
+    return items.toList().toSet().reversed().toSet()
 }
