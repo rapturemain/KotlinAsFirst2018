@@ -488,5 +488,4 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
         totalWeight -= worst.fold(0) { prev, it -> prev + treasures.getValue(it).first }
     }
     return items.toList().toSet().reversed().toSet()
-    //
 }
