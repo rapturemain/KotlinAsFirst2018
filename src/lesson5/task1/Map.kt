@@ -3,8 +3,10 @@
 package lesson5.task1
 
 import jdk.nashorn.internal.objects.Global.Infinity
+import jdk.nashorn.internal.objects.Global.isBuiltinFunctionPrototypeCall
 import lesson3.task1.squareBetweenExists
 import kotlin.math.abs
+import kotlin.math.max
 
 
 /**
@@ -435,57 +437,23 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
  *   ) -> emptySet()
  */
 
-fun findToDrop (treasures: Map<String, Pair<Int, Int>>, items: Set<String>, leftWeight: Int): List<String> {
-    if (items.isNotEmpty()) {
-        var worst = ""
-        var worstWeight = Int.MIN_VALUE
-        var worstCost = Int.MAX_VALUE
-        val bigObj = mutableListOf<String>()
-        items.forEach {
-            val (weight, cost) = treasures.getValue(it)
-            when {
-                (leftWeight - weight < 0) -> {
-                    bigObj.add(it)
-                }
-                (weight - worstWeight.toDouble() > cost - worstCost.toDouble()) -> {
-                    worst = it
-                    worstWeight = weight
-                    worstCost = cost
-                }
-            }
-        }
-        val worstList = mutableListOf(worst)
-        if (leftWeight - worstWeight.toDouble() > 0) {
-            val bufferSet = items.toSet().toMutableSet()
-
-            bufferSet.remove(worst)
-            worstList.addAll(findToDrop(treasures, bufferSet, leftWeight - worstWeight))
-        }
-        val listCost = worstList.fold(0) { prev, it -> prev + treasures.getValue(it).second }
-        worstCost = Int.MAX_VALUE
-        bigObj.forEach {
-            val cost = treasures.getValue(it).second
-            if (cost < worstCost) {
-                worstCost = cost
-                worst = it
-            }
-        }
-        return if (worstCost > listCost) worstList
-        else {
-            worstList.clear()
-            worstList.add(worst)
-            worstList
-        }
-    } else return emptyList()
-}
-
 fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> {
-    val items = treasures.keys.filter { treasures.getValue(it).first <= capacity }.toMutableSet()
-    var totalWeight = items.fold(0) { prev, it -> prev + treasures.getValue(it).first }
-    while (totalWeight > capacity) {
-        val worst = findToDrop(treasures, items, totalWeight - capacity)
-        items.removeAll(worst)
-        totalWeight -= worst.fold(0) { prev, it -> prev + treasures.getValue(it).first }
+    val costArray = Array(treasures.size + 1) { Array(capacity + 1) { 0 } }
+    val itemsArray = Array(treasures.size + 1) { Array(capacity + 1) { mutableSetOf<String>() } }
+    for (i in 1..treasures.size) {
+        for (w in 0..capacity) {
+            val key = treasures.toList()[i - 1].first
+            val (weight, cost) = treasures.getValue(key)
+            if ((weight <= w) && (costArray[i - 1][w] <= costArray[i - 1][w - weight] + cost)) {
+                costArray[i][w] = costArray[i - 1][w - weight] + cost
+                itemsArray[i][w].addAll(itemsArray[i - 1][w - weight])
+                itemsArray[i][w].add(key)
+            }
+            else {
+                costArray[i][w] = costArray[i - 1][w]
+                itemsArray[i][w] = itemsArray[i - 1][w]
+            }
+        }
     }
-    return items.toList().toSet().reversed().toSet()
+    return itemsArray[treasures.size][capacity].reversed().toSet()
 }

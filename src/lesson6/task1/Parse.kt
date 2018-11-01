@@ -2,6 +2,10 @@
 
 package lesson6.task1
 
+import lesson2.task2.daysInMonth
+import lesson3.task1.isEven
+import java.lang.IllegalArgumentException
+
 /**
  * Пример
  *
@@ -71,7 +75,27 @@ fun main(args: Array<String>) {
  * Обратите внимание: некорректная с точки зрения календаря дата (например, 30.02.2009) считается неверными
  * входными данными.
  */
-fun dateStrToDigit(str: String): String = TODO()
+fun dateStrToDigit(str: String): String {
+    Regex("""^[\d]+[ ].+[ ][\d]+$""").find(str) ?: return ""
+    val parts = str.split(" ")
+    var month = 0
+    when (parts[1]) {
+        "января" -> if (daysInMonth(1, parts[2].toInt()) >= parts[0].toInt()) month = 1
+        "февраля" -> if (daysInMonth(2, parts[2].toInt()) >= parts[0].toInt()) month = 2
+        "марта" -> if (daysInMonth(3, parts[2].toInt()) >= parts[0].toInt()) month = 3
+        "апреля" -> if (daysInMonth(4, parts[2].toInt()) >= parts[0].toInt()) month = 4
+        "мая" -> if (daysInMonth(5, parts[2].toInt()) >= parts[0].toInt()) month = 5
+        "июня" -> if (daysInMonth(6, parts[2].toInt()) >= parts[0].toInt()) month = 6
+        "июля" -> if (daysInMonth(7, parts[2].toInt()) >= parts[0].toInt()) month = 7
+        "августа" -> if (daysInMonth(8, parts[2].toInt()) >= parts[0].toInt()) month = 8
+        "сентября" -> if (daysInMonth(9, parts[2].toInt()) >= parts[0].toInt()) month = 9
+        "октября" -> if (daysInMonth(10, parts[2].toInt()) >= parts[0].toInt()) month = 10
+        "ноября" -> if (daysInMonth(11, parts[2].toInt()) >= parts[0].toInt()) month = 11
+        "декабря" -> if (daysInMonth(12, parts[2].toInt()) >= parts[0].toInt()) month = 12
+    }
+    return if (month == 0) ""
+           else "${twoDigitStr(parts[0].toInt())}.${twoDigitStr(month)}.${parts[2].toInt()}"
+}
 
 /**
  * Средняя
@@ -83,7 +107,28 @@ fun dateStrToDigit(str: String): String = TODO()
  * Обратите внимание: некорректная с точки зрения календаря дата (например, 30 февраля 2009) считается неверными
  * входными данными.
  */
-fun dateDigitToStr(digital: String): String = TODO()
+fun dateDigitToStr(digital: String): String {
+    Regex("""^[\d]+[.][\d]+[.][\d]+$""").find(digital) ?: return ""
+    val parts = digital.split(".")
+    if (parts.size > 3) return ""
+    if (daysInMonth(parts[1].toInt(), parts[2].toInt()) < parts[0].toInt()) return ""
+    val month = when (parts[1].toInt()) {
+        1 -> "января"
+        2 -> "февраля"
+        3 -> "марта"
+        4 -> "апреля"
+        5 -> "мая"
+        6 -> "июня"
+        7 -> "июля"
+        8 -> "августа"
+        9 -> "сентября"
+        10 -> "октября"
+        11 -> "ноября"
+        12 -> "декабря"
+        else -> return ""
+    }
+    return "${parts[0].toInt()} $month ${parts[2].toInt()}"
+}
 
 /**
  * Средняя
@@ -97,7 +142,15 @@ fun dateDigitToStr(digital: String): String = TODO()
  * Все символы в номере, кроме цифр, пробелов и +-(), считать недопустимыми.
  * При неверном формате вернуть пустую строку
  */
-fun flattenPhoneNumber(phone: String): String = TODO()
+fun isRightString(string: String, allowedChars: List<Char>): Boolean =
+        string.toList().all { allowedChars.contains(it) }
+
+fun flattenPhoneNumber(phone: String): String {
+    Regex("""^[-\d()+ ]+$""").find(phone) ?: return ""
+    val chars = phone.toMutableList()
+    val toDelete = " -()".toList()
+    return chars.filter { !toDelete.contains(it) }.joinToString("")
+}
 
 /**
  * Средняя
@@ -109,7 +162,20 @@ fun flattenPhoneNumber(phone: String): String = TODO()
  * Прочитать строку и вернуть максимальное присутствующее в ней число (717 в примере).
  * При нарушении формата входной строки или при отсутствии в ней чисел, вернуть -1.
  */
-fun bestLongJump(jumps: String): Int = TODO()
+fun bestLongJump(jumps: String): Int {
+    Regex("""^([-%]|[\d]+)([ ]([-%]|[\d]+))*$""").find(jumps) ?: return -1
+    val parts = jumps.split(" ").toMutableList()
+    val iterator = parts.iterator()
+    for (it in iterator) {
+        try {
+            it.toInt()
+        } catch (e: NumberFormatException){
+            iterator.remove()
+        }
+    }
+    return if (parts.isNotEmpty()) parts.maxBy { it.toInt() }!!.toInt()
+           else -1
+}
 
 /**
  * Сложная
@@ -121,7 +187,24 @@ fun bestLongJump(jumps: String): Int = TODO()
  * Прочитать строку и вернуть максимальную взятую высоту (230 в примере).
  * При нарушении формата входной строки вернуть -1.
  */
-fun bestHighJump(jumps: String): Int = TODO()
+fun bestHighJump(jumps: String): Int {
+    Regex("""^([\d]+[ ]([+%]+|[-%]+))([ ][\d]+[ ]([+%]+|[-%]+))*$""").find(jumps) ?: return -1
+    val parts = jumps.split(" ").toMutableList()
+    val jumpsHigh = mutableListOf<Int>()
+    val jumpsStatus = mutableListOf<Boolean>()
+    val iterator = parts.iterator()
+    for (it in iterator) {
+        try {
+            jumpsHigh.add(it.toInt())
+        } catch (e: NumberFormatException) {
+            if (!it.contains('+') || it.contains('-') || it.contains('%')) jumpsStatus.add(false)
+            else jumpsStatus.add(true)
+            if (jumpsStatus.size != jumpsHigh.size) return -1
+        }
+    }
+   return  if (jumpsHigh.isEmpty() || (jumpsHigh.size != jumpsStatus.size)) -1
+           else jumpsHigh.zip(jumpsStatus).filter { it.second }.maxBy { it.first }!!.first
+}
 
 /**
  * Сложная
@@ -132,7 +215,33 @@ fun bestHighJump(jumps: String): Int = TODO()
  * Вернуть значение выражения (6 для примера).
  * Про нарушении формата входной строки бросить исключение IllegalArgumentException
  */
-fun plusMinus(expression: String): Int = TODO()
+fun plusMinus(expression: String): Int {
+    Regex("""^[\d]+([ ]([-]|[+])[ ][\d]+)*$""").find(expression) ?: throw IllegalArgumentException()
+    val parts = expression.split(" ").toMutableList()
+    val plus = 1
+    val minus = 2
+    val startOfExpression = 0
+    val numbers = mutableListOf<Int>()
+    val operations = mutableListOf(startOfExpression)
+    for (i in 0 until parts.size) {
+        if (isEven(i)) {
+            if (("+-".toList().contains(parts[i][0]))) throw IllegalArgumentException()
+            // Подскажите, пожалуйста, возможно ли в Regex делать проверку, чтобы отсеивать вхождения +123 и -123
+            // ибо [\d]+ считает такие вхождения за числа, а [^-+][\d]+ не работает
+            numbers.add(parts[i].toInt())
+        } else when (parts[i]) {
+            "+" -> operations.add(plus)
+            "-" -> operations.add(minus)
+        }
+    }
+    return numbers.zip(operations).fold(0) {prev, it ->
+        when {
+            it.second == plus -> prev + it.first
+            it.second == minus -> prev - it.first
+            else -> prev + it.first
+        }
+    }
+}
 
 /**
  * Сложная
@@ -143,7 +252,16 @@ fun plusMinus(expression: String): Int = TODO()
  * Вернуть индекс начала первого повторяющегося слова, или -1, если повторов нет.
  * Пример: "Он пошёл в в школу" => результат 9 (индекс первого 'в')
  */
-fun firstDuplicateIndex(str: String): Int = TODO()
+fun firstDuplicateIndex(str: String): Int {
+    val parts = str.toLowerCase().split(" ")
+    if (parts.size == 1) return -1
+    var currentSize = 0
+    for (i in 0 until parts.size - 1) {
+        if (parts[i] == parts[i + 1]) return currentSize
+        else currentSize += parts[i].toList().size + 1
+    }
+    return -1
+}
 
 /**
  * Сложная
@@ -156,7 +274,24 @@ fun firstDuplicateIndex(str: String): Int = TODO()
  * или пустую строку при нарушении формата строки.
  * Все цены должны быть больше либо равны нуля.
  */
-fun mostExpensive(description: String): String = TODO()
+fun mostExpensive(description: String): String {
+    val parts = description.split(" ").toMutableList()
+    val products = mutableListOf<String>()
+    val costs = mutableListOf<Double>()
+    for (i in 0 until parts.size) {
+        if (isEven(i)) products.add(parts[i])
+        else try {
+            val buffer = parts[i].toMutableList()
+            buffer.remove(';')
+            costs.add(buffer.joinToString("").toDouble())
+            if (products.size != costs.size) return ""
+        } catch (e:NumberFormatException) {
+            return ""
+        }
+    }
+    return if (products.size == costs.size) products.zip(costs).maxBy { it.second }!!.first
+           else ""
+}
 
 /**
  * Сложная
@@ -169,7 +304,17 @@ fun mostExpensive(description: String): String = TODO()
  *
  * Вернуть -1, если roman не является корректным римским числом
  */
-fun fromRoman(roman: String): Int = TODO()
+fun fromRoman(roman: String): Int {
+    Regex("""^(M{0,3})(D?C{0,3}|C[DM])(L?X{0,3}|X[LC])(V?I{0,3}|I[VX])$""").find(roman) ?: return -1
+    val convertRoman = mapOf('I' to 1, 'V' to 5, 'X' to 10, 'L' to 50, 'C' to 100, 'D' to 500, 'M' to 1000)
+    val parts = roman.toList().map { convertRoman.getValue(it) }
+    var total = parts[parts.size - 1]
+    for (i in parts.size - 1 downTo 1) {
+        if (parts[i - 1] >= parts[i]) total += parts[i - 1]
+        else total -= parts[i - 1]
+    }
+    return total
+}
 
 /**
  * Очень сложная
@@ -207,4 +352,59 @@ fun fromRoman(roman: String): Int = TODO()
  * IllegalArgumentException должен бросаться даже если ошибочная команда не была достигнута в ходе выполнения.
  *
  */
-fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> = TODO()
+fun findPair(commands: String, currentIndex: Int): Int {
+    val commandChars = commands.toList()
+    var toMove = 0
+    var count = 0
+    var index = currentIndex
+    when (commandChars[index]) {
+        '[' -> {
+            toMove = 1
+            count = 1
+        }
+        ']' -> {
+            toMove = -1
+            count = -1
+        }
+    }
+    try {
+        while (count != 0) {
+            index += toMove
+            when (commandChars[index]) {
+                '[' -> count++
+                ']' -> count--
+            }
+        }
+    } catch (e:IndexOutOfBoundsException) {
+        throw IllegalArgumentException()
+    }
+    return index
+}
+
+fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> {
+    if (!isRightString(commands, "<>-+[] ".toList())) throw IllegalArgumentException()
+    // Как можно сделать Regex для этого случая?
+    // Regex("""^[-+<>/[/]]+$""") выдает illegal escape для /[ и /]
+    for (i in 0 until commands.toList().size) {
+        if ((commands.toList()[i] == '[') || (commands.toList()[i] == ']')) findPair(commands, i)
+    }
+    val cellsList = IntArray(cells) { 0 }.toMutableList()
+    val commandChars = commands.toList()
+    var pos = cells / 2
+    var index = 0
+    var wasOperations = 0
+        while ((wasOperations < limit) && (index < commandChars.size)) {
+            when (commandChars[index]) {
+                '>' -> pos++
+                '<' -> pos--
+                '+' -> cellsList[pos]++
+                '-' -> cellsList[pos]--
+                '[' -> if (cellsList[pos] == 0) index = findPair(commands, index)
+                ']' -> if (cellsList[pos] != 0) index = findPair(commands, index)
+            }
+            index++
+            wasOperations++
+            if ((pos < 0) || (pos >= cells)) throw IllegalStateException()
+        }
+    return cellsList
+}
