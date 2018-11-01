@@ -5,6 +5,7 @@ package lesson7.task1
 import java.io.File
 import kotlin.math.ceil
 import kotlin.math.floor
+import kotlin.system.exitProcess
 
 /**
  * Пример
@@ -67,8 +68,7 @@ fun countSubstrings(inputName: String, substrings: List<String>): Map<String, In
             var buffer = line.toLowerCase()
             while (buffer.contains(it)) {
                 count++
-                val index = buffer.indexOf(it)
-                buffer = buffer.removeRange(index, index + it.length)
+                buffer = buffer.drop(buffer.indexOf(it) + 1)
             }
             map.replace(key, count)
         }
@@ -111,11 +111,11 @@ fun sibilants(inputName: String, outputName: String) {
             var wasChanged = 0
             while (buffer.contains(wrong)) {
                 val index = buffer.indexOf(wrong)
-                buffer = buffer.removeRange(index, index + 2)
+                buffer = buffer.drop(index + 1)
                 toPut[index + 1 + wasChanged] = if (secondCharWrong.contains(toPut[index + 1 + wasChanged]))
                      right[1]
                 else right[1].toUpperCase()
-                wasChanged += 2
+                wasChanged += index + 1
             }
         }
         outFile.write(toPut.joinToString(""))
@@ -144,15 +144,20 @@ fun sibilants(inputName: String, outputName: String) {
 fun centerFile(inputName: String, outputName: String) {
     val inFile = File(inputName)
     val outFile = File(outputName).bufferedWriter()
-    val map = inFile.readLines().map {
-        it.trim { c -> c == ' ' } to it.trim { char -> char == ' ' }.length }.toMap().toMutableMap()
-    val maxLength = map.maxBy { it.value }!!.value
-    map.forEach {
-        it, size ->
-        outFile.write(it.padStart((maxLength - size) / 2 + size))
-        outFile.newLine()
+    try {
+        val map = inFile.readLines().map {
+            it.trim { c -> c == ' ' } to it.trim { char -> char == ' ' }.length
+        }.toMap().toMutableMap()
+        val maxLength = map.maxBy { it.value }!!.value
+        map.forEach { it, size ->
+            outFile.write(it.padStart((maxLength - size) / 2 + size))
+            outFile.newLine()
+        }
+        outFile.close()
+    } catch (e: NullPointerException) {
+        outFile.write("")
+        outFile.close()
     }
-    outFile.close()
 }
 
 /**
@@ -185,39 +190,42 @@ fun centerFile(inputName: String, outputName: String) {
 fun alignFileByWidth(inputName: String, outputName: String) {
     val inFile = File(inputName)
     val outFile = File(outputName).bufferedWriter()
-    val map = inFile.readLines().map {
-        it.trim { c -> c == ' ' }.split(" ") to
-                it.trim { c -> c == ' ' }.split(" ").fold(0) { p, w -> p + w.length + 1 } - 1
-    }
-    val maxLength = map.maxBy { it.second }!!.second
-    map.forEach {
-        (it, size) ->
-        when {
-            it.size == 1 -> outFile.write(it.joinToString(""))
-            else -> {
-                var line = ""
-                val spaceSize = (maxLength - size) / (it.size - 1) + 1
-                var count = it.size - 1
-                val countToShort = (maxLength - size) % (it.size - 1)
-                it.forEach {
-                    l ->
-                    if (count > 0)
-                        if (count > it.size - 1 - countToShort) {
-                            line += "$l${"".padStart(spaceSize + 1)}"
-                            count -= 1
-                        } else {
-                            line += "$l${"".padStart(spaceSize)}"
-                            count -= 1
-                        } else {
-                        line += l
-                    }
-                }
-                outFile.write(line)
-            }
+    try {
+        val map = inFile.readLines().map {
+            it.trim { c -> c == ' ' }.split(" ") to
+                    it.trim { c -> c == ' ' }.split(" ").fold(0) { p, w -> p + w.length + 1 } - 1
         }
-        outFile.newLine()
+        val maxLength = map.maxBy { it.second }!!.second
+        map.forEach { (it, size) ->
+            when {
+                it.size == 1 -> outFile.write(it.joinToString(""))
+                else -> {
+                    var line = ""
+                    val spaceSize = (maxLength - size) / (it.size - 1) + 1
+                    var count = it.size - 1
+                    val countToShort = (maxLength - size) % (it.size - 1)
+                    it.forEach { l ->
+                        if (count > 0)
+                            if (count > it.size - 1 - countToShort) {
+                                line += "$l${"".padStart(spaceSize + 1)}"
+                                count -= 1
+                            } else {
+                                line += "$l${"".padStart(spaceSize)}"
+                                count -= 1
+                            } else {
+                            line += l
+                        }
+                    }
+                    outFile.write(line)
+                }
+            }
+            outFile.newLine()
+        }
+        outFile.close()
+    } catch (e: NullPointerException) {
+        outFile.write("")
+        outFile.close()
     }
-    outFile.close()
 }
 
 /**
