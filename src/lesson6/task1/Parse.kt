@@ -146,10 +146,13 @@ fun isRightString(string: String, allowedChars: List<Char>): Boolean =
         string.toList().all { allowedChars.contains(it) }
 
 fun flattenPhoneNumber(phone: String): String {
-    Regex("""^[-\d()+ ]+$""").find(phone) ?: return ""
-    val chars = phone.toMutableList()
+    Regex("""^[-()\d+ ]+$""").find(phone) ?: return ""
+    Regex("""\d+""").find(phone) ?: return ""
+    val chars = phone.toList()
     val toDelete = " -()+".toList()
-    return chars.filter { !toDelete.contains(it) }.joinToString("")
+    return "${
+    if (chars.first { it != ' ' } == '+') "+" else ""}${
+    chars.filter { !toDelete.contains(it) }.joinToString("")}"
 }
 
 /**
@@ -206,8 +209,11 @@ fun bestHighJump(jumps: String): Int {
             if (jumpsStatus.size != jumpsHigh.size) return -1
         }
     }
-   return  if (jumpsHigh.isEmpty() || (jumpsHigh.size != jumpsStatus.size)) -1
-           else jumpsHigh.zip(jumpsStatus).filter { it.second }.maxBy { it.first }!!.first
+   return when {
+       jumpsHigh.isEmpty() || jumpsHigh.size != jumpsStatus.size -> -1
+       !jumpsStatus.contains(true) -> -1
+       else -> jumpsHigh.zip(jumpsStatus).filter { it.second }.maxBy { it.first }!!.first
+   }
 }
 
 /**
