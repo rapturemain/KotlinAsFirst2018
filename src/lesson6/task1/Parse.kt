@@ -163,8 +163,10 @@ fun flattenPhoneNumber(phone: String): String {
  * При нарушении формата входной строки или при отсутствии в ней чисел, вернуть -1.
  */
 fun bestLongJump(jumps: String): Int {
-    Regex("""^([-%]|[\d]+)([ ]+([-%]|[\d]+))*$""").find(jumps) ?: return -1
     val parts = jumps.split(" ").toMutableList()
+    val allowedChars = "0123456789 -%".toList()
+    if (!isRightString(jumps, allowedChars)) return -1
+    // При слишком большом jumps Regex("""^([-%]|[\d]+)([ ]+([-%]|[\d]+))*$""") выдает StackOverflow
     val iterator = parts.iterator()
     for (it in iterator) {
         try {
@@ -188,8 +190,10 @@ fun bestLongJump(jumps: String): Int {
  * При нарушении формата входной строки вернуть -1.
  */
 fun bestHighJump(jumps: String): Int {
-    Regex("""^([\d]+[ ]([+%]+|[-%]+))([ ][\d]+[ ]([+%]+|[-%]+))*$""").find(jumps) ?: return -1
+    // Должно ли 123 %+ считаться удачным прыжком?
     val parts = jumps.split(" ").toMutableList()
+    val allowedChars = "0123456789 %-+".toList()
+    if (!isRightString(jumps, allowedChars)) return -1
     val jumpsHigh = mutableListOf<Int>()
     val jumpsStatus = mutableListOf<Boolean>()
     val iterator = parts.iterator()
@@ -197,8 +201,8 @@ fun bestHighJump(jumps: String): Int {
         try {
             jumpsHigh.add(it.toInt())
         } catch (e: NumberFormatException) {
-            if (!it.contains('+') || it.contains('-') || it.contains('%')) jumpsStatus.add(false)
-            else jumpsStatus.add(true)
+            if (it.contains('+') && !it.contains('%')) jumpsStatus.add(true)
+            else jumpsStatus.add(false)
             if (jumpsStatus.size != jumpsHigh.size) return -1
         }
     }
@@ -305,7 +309,9 @@ fun mostExpensive(description: String): String {
  * Вернуть -1, если roman не является корректным римским числом
  */
 fun fromRoman(roman: String): Int {
+    if (roman.isEmpty()) return -1
     Regex("""^(M*)(D?C{0,3}|C[DM])(L?X{0,3}|X[LC])(V?I{0,3}|I[VX])$""").find(roman) ?: return -1
+    // Regex не отсеивает пустую строку, так и должно быть?
     val convertRoman = mapOf('I' to 1, 'V' to 5, 'X' to 10, 'L' to 50, 'C' to 100, 'D' to 500, 'M' to 1000)
     val parts = roman.toList().map { convertRoman.getValue(it) }
     var total = parts[parts.size - 1]
