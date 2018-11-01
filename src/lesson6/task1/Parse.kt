@@ -148,7 +148,7 @@ fun isRightString(string: String, allowedChars: List<Char>): Boolean =
 fun flattenPhoneNumber(phone: String): String {
     Regex("""^[-\d()+ ]+$""").find(phone) ?: return ""
     val chars = phone.toMutableList()
-    val toDelete = " -()".toList()
+    val toDelete = " -()+".toList()
     return chars.filter { !toDelete.contains(it) }.joinToString("")
 }
 
@@ -201,7 +201,7 @@ fun bestHighJump(jumps: String): Int {
         try {
             jumpsHigh.add(it.toInt())
         } catch (e: NumberFormatException) {
-            if (it.contains('+') && !it.contains('%')) jumpsStatus.add(true)
+            if (it.contains('+') && !it.contains('-')) jumpsStatus.add(true)
             else jumpsStatus.add(false)
             if (jumpsStatus.size != jumpsHigh.size) return -1
         }
