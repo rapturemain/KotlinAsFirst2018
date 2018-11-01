@@ -163,7 +163,7 @@ fun flattenPhoneNumber(phone: String): String {
  * При нарушении формата входной строки или при отсутствии в ней чисел, вернуть -1.
  */
 fun bestLongJump(jumps: String): Int {
-    Regex("""^([-%]|[\d]+)([ ]([-%]|[\d]+))*$""").find(jumps) ?: return -1
+    Regex("""^([-%]|[\d]+)([ ]+([-%]|[\d]+))*$""").find(jumps) ?: return -1
     val parts = jumps.split(" ").toMutableList()
     val iterator = parts.iterator()
     for (it in iterator) {
@@ -305,7 +305,7 @@ fun mostExpensive(description: String): String {
  * Вернуть -1, если roman не является корректным римским числом
  */
 fun fromRoman(roman: String): Int {
-    Regex("""^(M{0,3})(D?C{0,3}|C[DM])(L?X{0,3}|X[LC])(V?I{0,3}|I[VX])$""").find(roman) ?: return -1
+    Regex("""^(M*)(D?C{0,3}|C[DM])(L?X{0,3}|X[LC])(V?I{0,3}|I[VX])$""").find(roman) ?: return -1
     val convertRoman = mapOf('I' to 1, 'V' to 5, 'X' to 10, 'L' to 50, 'C' to 100, 'D' to 500, 'M' to 1000)
     val parts = roman.toList().map { convertRoman.getValue(it) }
     var total = parts[parts.size - 1]
