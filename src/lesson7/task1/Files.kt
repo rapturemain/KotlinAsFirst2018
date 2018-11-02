@@ -3,6 +3,7 @@
 package lesson7.task1
 
 import java.io.File
+import kotlin.coroutines.experimental.buildIterator
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.system.exitProcess
@@ -235,7 +236,45 @@ fun alignFileByWidth(inputName: String, outputName: String) {
  * Ключи в ассоциативном массиве должны быть в нижнем регистре.
  *
  */
-fun top20Words(inputName: String): Map<String, Int> = TODO()
+fun getWords(line: String): List<String> {
+    if (line.isEmpty()) return emptyList()
+    val words = mutableListOf<String>()
+    var word = ""
+    line.toLowerCase().toList().forEach {
+        if ((it >= 'a') && (it  <= 'z') || (it >= 'а') && (it <= 'я') || (it == 'ё')) word += it.toString()
+        else {
+            if (word != "") {
+                words.add(word)
+                word = ""
+            }
+        }
+    }
+    if (word.isNotEmpty()) words.add(word)
+    return words
+}
+
+fun top20Words(inputName: String): Map<String, Int> {
+    val inFile = File(inputName)
+    var map = mutableMapOf<String, Int>()
+    inFile.readLines().forEach {
+        line ->
+        val buffer = getWords(line)
+        buffer.forEach {
+            map[it] = map.getOrDefault(it, 0) + 1
+        }
+    }
+    map = map.map { it.key to it.value }.sortedBy { it.second }.reversed().toMap().toMutableMap()
+    return if (map.size <= 20) map
+    else {
+        val buffer = mutableMapOf<String, Int>()
+        var count = 0
+        map.forEach { key, value ->
+            if (count < 20) buffer[key] = value
+            count++
+        }
+        buffer
+    }
+}
 
 /**
  * Средняя
