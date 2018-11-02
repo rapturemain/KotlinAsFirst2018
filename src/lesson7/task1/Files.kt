@@ -263,7 +263,8 @@ fun top20Words(inputName: String): Map<String, Int> {
             map[it] = map.getOrDefault(it, 0) + 1
         }
     }
-    map = map.map { it.key to it.value }.sortedBy { it.second }.reversed().toMap().toMutableMap()
+    map = map.map { it.key to it.value }
+            .sortedBy { it.second + (1.0 - it.first[0].toInt() / 1000.0) }.reversed().toMap().toMutableMap()
     return if (map.size <= 20) map
     else {
         val buffer = mutableMapOf<String, Int>()
