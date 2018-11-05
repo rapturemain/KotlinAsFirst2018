@@ -505,6 +505,7 @@ fun lineWork (line: String, outFile: BufferedWriter) {
     }
 }
 
+
 fun markdownToHtmlSimple(inputName: String, outputName: String) {
     val inFile = File(inputName)
     val outFile = File(outputName).bufferedWriter()
