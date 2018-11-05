@@ -198,17 +198,19 @@ fun alignFileByWidth(inputName: String, outputName: String) {
         val lengths = words.map { it.joinToString(" ").length }
         val maxLength = lengths.max()!!.toInt()
         for (i in 0 until words.size) {
-            if (words[i].size == 1) outFile.write(words[i][0])
-            else {
-                val spaces = maxLength - lengths[i] + count[i] - 1
-                val gaps = count[i] - 1
-                if (spaces == count[i] - 1) outFile.write(words[i].joinToString(" "))
-                else {
-                    val longWords = spaces % gaps
-                    val spaceSize = spaces / gaps
-                    for (j in 0 until longWords) outFile.write("${words[i][j]}${"".padStart(spaceSize + 1)}")
-                    for (j in longWords until gaps) outFile.write("${words[i][j]}${"".padStart(spaceSize)}")
-                    outFile.write(words[i].last())
+            when {
+                words[i].size == 1 -> outFile.write(words[i][0])
+                words[i].isNotEmpty() -> {
+                    val spaces = maxLength - lengths[i] + count[i] - 1
+                    val gaps = count[i] - 1
+                    if (spaces == count[i] - 1) outFile.write(words[i].joinToString(" "))
+                    else {
+                        val longWords = spaces % gaps
+                        val spaceSize = spaces / gaps
+                        for (j in 0 until longWords) outFile.write("${words[i][j]}${"".padStart(spaceSize + 1)}")
+                        for (j in longWords until gaps) outFile.write("${words[i][j]}${"".padStart(spaceSize)}")
+                        outFile.write(words[i].last())
+                    }
                 }
             }
             outFile.newLine()
@@ -325,7 +327,6 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
             if (buffer.isNotEmpty()) outFile.write(buffer.replaceFirst(buffer[0], buffer[0].toUpperCase()))
             else outFile.write(buffer)
         }
-        outFile.newLine()
     }
     outFile.close()
 }
