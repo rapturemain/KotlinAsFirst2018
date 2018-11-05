@@ -487,7 +487,7 @@ fun lineWork (line: String, outFile: BufferedWriter) {
                     i += 3
                 }
             }
-            (line[i] == '~') && (line[i + 1] == '~') ->
+            (line[i] == '~') && (i != line.length - 1) && (line[i + 1] == '~') ->
                 if (crossedStatus) {
                     outFile.write("</s>")
                     crossedStatus = false
@@ -504,7 +504,6 @@ fun lineWork (line: String, outFile: BufferedWriter) {
         }
     }
 }
-
 
 fun markdownToHtmlSimple(inputName: String, outputName: String) {
     val inFile = File(inputName)
