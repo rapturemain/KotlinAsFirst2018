@@ -6,6 +6,7 @@ import java.io.File
 import kotlin.coroutines.experimental.buildIterator
 import kotlin.math.ceil
 import kotlin.math.floor
+import kotlin.math.max
 import kotlin.system.exitProcess
 
 /**
@@ -313,7 +314,21 @@ fun top20Words(inputName: String): Map<String, Int> {
  * Обратите внимание: данная функция не имеет возвращаемого значения
  */
 fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: String) {
-    TODO()
+    val inFile = File(inputName)
+    val outFile = File(outputName).bufferedWriter()
+    val mapUpdated = dictionary.map { it.key.toLowerCase() to it.value.toLowerCase() }.toMap()
+    inFile.readLines().forEach {
+        line ->
+        line.forEach {
+            if (it.toLowerCase() == it) outFile.write(mapUpdated.getOrDefault(it, it.toString()))
+            else {
+                val buffer = mapUpdated.getOrDefault(it.toLowerCase(), it.toString())
+                outFile.write(buffer.replaceFirst(buffer[0], buffer[0].toUpperCase()))
+            }
+        }
+        outFile.newLine()
+    }
+    outFile.close()
 }
 
 /**
@@ -340,8 +355,37 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
  *
  * Обратите внимание: данная функция не имеет возвращаемого значения
  */
+fun checkWord (word: String): Boolean {
+    val listOfChar = word.toLowerCase().toMutableList()
+    listOfChar.sort()
+    var prev = listOfChar.first()
+    listOfChar.remove(prev)
+    listOfChar.forEach {
+        if (it == prev) return false
+        else prev = it
+    }
+    return true
+}
+
 fun chooseLongestChaoticWord(inputName: String, outputName: String) {
-    TODO()
+    val inFile = File(inputName)
+    val outFile = File(outputName).bufferedWriter()
+    val listOfMax = mutableListOf<String>()
+    var max = 0
+    inFile.readLines().forEach {
+        if (checkWord(it)) {
+            when {
+                it.length > max -> {
+                    max = it.length
+                    listOfMax.clear()
+                    listOfMax.add(it)
+                }
+                it.length == max -> listOfMax.add(it)
+            }
+        }
+    }
+    outFile.write(listOfMax.joinToString(", "))
+    outFile.close()
 }
 
 /**
@@ -387,9 +431,56 @@ Suspendisse ~~et elit in enim tempus iaculis~~.
  *
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
  */
-fun markdownToHtmlSimple(inputName: String, outputName: String) {
-    TODO()
+
+// 0 - italics 1 - bold 2 - !italic 3 - !bold
+
+fun checkStars (prev: String, italicStatus: Boolean, boldStatus: Boolean): Int {
+    return if (prev == "*") if (boldStatus) 3 else 1
+    else if (italicStatus) 2 else 0
 }
+
+fun markdownToHtmlSimple(inputName: String, outputName: String) { TODO() }
+    /* { /// IN PROGRESS ///
+
+    val inFile = File(inputName)
+    val outFile = File(outputName).bufferedWriter()
+    outFile.write("<html>\n<body>\n")
+    var paraStatus = true
+    var italicStatus = false
+    var boldStatus = false
+    var crossedStatus = false
+    var prev = ""
+    inFile.readLines().forEach {
+        line ->
+        if (line == "") {
+            if (paraStatus) outFile.write("<p>\n")
+            else paraStatus = true
+        }
+        else {
+            if (paraStatus) outFile.write("<p>\n")
+            line.forEach {
+                if (it == '*' ) when (checkStars(prev, italicStatus, boldStatus)) {
+                    0 -> {
+                        italicStatus = true
+                        prev = "*"
+                    }
+                    1 -> {
+                        boldStatus = true
+                        italicStatus = false
+                        prev = ""
+                    }
+                    2 -> {
+                        italicStatus = false
+                        prev = "*"
+                    }
+                    3 -> boldStatus = false
+                }
+            }
+        }
+
+    }
+    outFile.write("/body\n</html>\n")
+} */
 
 /**
  * Сложная
