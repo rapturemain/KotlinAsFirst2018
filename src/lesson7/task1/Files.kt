@@ -445,7 +445,8 @@ fun checkStars (nextFirst: Char, nextSecond: Char, italicStatus: Boolean, boldSt
         }
 }
 
-fun lineWork (line: String, outFile: BufferedWriter) {
+fun lineWork (string: String, outFile: BufferedWriter) {
+    val line = "$string  "
     var italicStatus = false
     var boldStatus = false
     var crossedStatus = false
@@ -455,19 +456,25 @@ fun lineWork (line: String, outFile: BufferedWriter) {
             line[i] == '*' ->
                 when (checkStars(line[i + 1], line[i + 2], italicStatus, boldStatus)) {
                 0 -> {
-                    outFile.write("<i>")
-                    italicStatus = true
+                    if (i < line.length - 1) {
+                        outFile.write("<i>")
+                        italicStatus = true
+                    } else outFile.write("*")
                     i += 1
                 }
                 1 -> {
-                    outFile.write("<b>")
-                    boldStatus = true
+                    if (i < line.length - 2) {
+                        outFile.write("<b>")
+                        boldStatus = true
+                    } else outFile.write("**")
                     i += 2
                 }
                 2 -> {
-                    outFile.write("<b><i>")
-                    italicStatus = true
-                    boldStatus = true
+                    if (i < line.length - 3) {
+                        outFile.write("<b><i>")
+                        italicStatus = true
+                        boldStatus = true
+                    } else outFile.write("***")
                     i += 3
                 }
                 3 -> {
@@ -487,7 +494,7 @@ fun lineWork (line: String, outFile: BufferedWriter) {
                     i += 3
                 }
             }
-            (line[i] == '~') && (i != line.length - 1) && (line[i + 1] == '~') ->
+            (line[i] == '~') && (line[i + 1] == '~') ->
                 if (crossedStatus) {
                     outFile.write("</s>")
                     crossedStatus = false
