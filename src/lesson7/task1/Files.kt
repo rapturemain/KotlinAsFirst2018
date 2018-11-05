@@ -193,7 +193,7 @@ fun alignFileByWidth(inputName: String, outputName: String) {
     val inFile = File(inputName)
     val outFile = File(outputName).bufferedWriter()
     try {
-        val words = inFile.readLines().map { it.trim { c -> c == ' ' }.split(" ") }
+        val words = inFile.readLines().map { it.trim { c -> c == ' ' }.split(" ").filter { c -> c != "" } }
         val count = words.map { it.size }
         val lengths = words.map { it.joinToString(" ").length }
         val maxLength = lengths.max()!!.toInt()
@@ -265,8 +265,7 @@ fun top20Words(inputName: String): Map<String, Int> {
             map[it] = map.getOrDefault(it, 0) + 1
         }
     }
-    map = map.map { it.key to it.value }
-            .sortedBy { it.second + (1.0 - it.first[0].toInt() / 1000.0) }.reversed().toMap().toMutableMap()
+    map = map.map { it.key to it.value }.reversed().toMap().toMutableMap().toSortedMap()
     return if (map.size <= 20) map
     else {
         val buffer = mutableMapOf<String, Int>()
@@ -318,15 +317,12 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
     val inFile = File(inputName)
     val outFile = File(outputName).bufferedWriter()
     val mapUpdated = dictionary.map { it.key.toLowerCase() to it.value.toLowerCase() }.toMap()
-    inFile.readLines().forEach {
-        line ->
-        line.forEach {
-            if (it.toLowerCase() == it) outFile.write(mapUpdated.getOrDefault(it, it.toString()))
-            else {
-                val buffer = mapUpdated.getOrDefault(it.toLowerCase(), it.toString())
-                if (buffer.isNotEmpty()) outFile.write(buffer.replaceFirst(buffer[0], buffer[0].toUpperCase()))
-                else outFile.write(buffer)
-            }
+    inFile.readText().forEach {
+        if (it.toLowerCase() == it) outFile.write(mapUpdated.getOrDefault(it, it.toString()))
+        else {
+            val buffer = mapUpdated.getOrDefault(it.toLowerCase(), it.toString())
+            if (buffer.isNotEmpty()) outFile.write(buffer.replaceFirst(buffer[0], buffer[0].toUpperCase()))
+            else outFile.write(buffer)
         }
         outFile.newLine()
     }
@@ -511,24 +507,26 @@ fun lineWork (line: String, outFile: BufferedWriter) {
 fun markdownToHtmlSimple(inputName: String, outputName: String) {
     val inFile = File(inputName)
     val outFile = File(outputName).bufferedWriter()
-    outFile.write("<html>\n<body>\n")
+    outFile.write("<html>")
+    outFile.write("<body>")
     var paraStatus = true
     inFile.readLines().forEach {
         line ->
         if (line == "") {
-            if (!paraStatus) outFile.write("</p>\n")
+            if (!paraStatus) outFile.write("</p>")
             paraStatus = true
         }
         else {
             if (paraStatus) {
-                outFile.write("<p>\n")
+                outFile.write("<p>")
                 paraStatus = false
             }
             lineWork(line, outFile)
         }
     }
-    if (!paraStatus) outFile.write("</p>\n")
-    outFile.write("</body>\n</html>\n")
+    if (!paraStatus) outFile.write("</p>")
+    outFile.write("</body>")
+    outFile.write("</html>")
     outFile.close()
 }
 
