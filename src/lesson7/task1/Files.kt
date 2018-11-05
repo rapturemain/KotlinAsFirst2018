@@ -451,7 +451,7 @@ fun lineWork (string: String, outFile: BufferedWriter) {
     var boldStatus = false
     var crossedStatus = false
     var i = 0
-    while (i < line.length) {
+    while (i < line.length - 2) {
         when {
             line[i] == '*' ->
                 when (checkStars(line[i + 1], line[i + 2], italicStatus, boldStatus)) {
@@ -500,8 +500,10 @@ fun lineWork (string: String, outFile: BufferedWriter) {
                     crossedStatus = false
                     i += 2
                 } else {
-                    outFile.write("<s>")
-                    crossedStatus = true
+                    if (i < line.length - 2) {
+                        outFile.write("<s>")
+                        crossedStatus = true
+                    } else outFile.write("~~")
                     i += 2
                 }
             else -> {
@@ -519,17 +521,23 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
     outFile.write("<html>")
     outFile.write("<body>")
     var paraStatus = true
+    var prevLineEmpty = false
     val lines = inFile.readLines()
     lines.forEach {
         line ->
         if (line == "") {
-            if (!paraStatus) outFile.write("</p>")
+            when {
+                prevLineEmpty -> outFile.write("<p></p>")
+                !paraStatus -> outFile.write("</p>")
+            }
             paraStatus = true
+            prevLineEmpty = true
         }
         else {
             if (paraStatus) {
                 outFile.write("<p>")
                 paraStatus = false
+                prevLineEmpty = false
             }
             lineWork(line, outFile)
         }
