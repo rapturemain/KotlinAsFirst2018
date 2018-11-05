@@ -511,7 +511,8 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
     outFile.write("<html>")
     outFile.write("<body>")
     var paraStatus = true
-    inFile.readLines().forEach {
+    val lines = inFile.readLines()
+    lines.forEach {
         line ->
         if (line == "") {
             if (!paraStatus) outFile.write("</p>")
@@ -524,6 +525,7 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
             }
             lineWork(line, outFile)
         }
+        if (line != lines.last()) outFile.newLine()
     }
     if (!paraStatus) outFile.write("</p>")
     outFile.write("</body>")
