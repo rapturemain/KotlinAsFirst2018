@@ -2,6 +2,7 @@
 
 package lesson7.task1
 
+import java.io.BufferedWriter
 import java.io.File
 import kotlin.coroutines.experimental.buildIterator
 import kotlin.math.ceil
@@ -323,7 +324,8 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
             if (it.toLowerCase() == it) outFile.write(mapUpdated.getOrDefault(it, it.toString()))
             else {
                 val buffer = mapUpdated.getOrDefault(it.toLowerCase(), it.toString())
-                outFile.write(buffer.replaceFirst(buffer[0], buffer[0].toUpperCase()))
+                if (buffer.isNotEmpty()) outFile.write(buffer.replaceFirst(buffer[0], buffer[0].toUpperCase()))
+                else outFile.write(buffer)
             }
         }
         outFile.newLine()
@@ -432,55 +434,103 @@ Suspendisse ~~et elit in enim tempus iaculis~~.
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
  */
 
-// 0 - italics 1 - bold 2 - !italic 3 - !bold
+// 0 - italics 1 - bold 2 - b+i 3 - !italics 4 - !bold 5 - !b+i
 
-fun checkStars (prev: String, italicStatus: Boolean, boldStatus: Boolean): Int {
-    return if (prev == "*") if (boldStatus) 3 else 1
-    else if (italicStatus) 2 else 0
+fun checkStars (nextFirst: Char, nextSecond: Char, italicStatus: Boolean, boldStatus: Boolean): Int {
+    return if (nextFirst == '*') {
+        if (nextSecond == '*') {
+                if (boldStatus) 5 else 2
+            } else if (boldStatus) 4 else 1
+        } else {
+            if (italicStatus) 3
+            else 0
+        }
 }
 
-fun markdownToHtmlSimple(inputName: String, outputName: String) { TODO() }
-    /* { /// IN PROGRESS ///
+fun lineWork (line: String, outFile: BufferedWriter) {
+    var italicStatus = false
+    var boldStatus = false
+    var crossedStatus = false
+    var i = 0
+    while (i < line.length) {
+        when {
+            line[i] == '*' ->
+                when (checkStars(line[i + 1], line[i + 2], italicStatus, boldStatus)) {
+                0 -> {
+                    outFile.write("<i>")
+                    italicStatus = true
+                    i += 1
+                }
+                1 -> {
+                    outFile.write("<b>")
+                    boldStatus = true
+                    i += 2
+                }
+                2 -> {
+                    outFile.write("<b><i>")
+                    italicStatus = true
+                    boldStatus = true
+                    i += 3
+                }
+                3 -> {
+                    outFile.write("</i>")
+                    italicStatus = false
+                    i += 1
+                }
+                4 -> {
+                    outFile.write("</b>")
+                    boldStatus = false
+                    i += 2
+                }
+                5 -> {
+                    outFile.write("</b></i>")
+                    italicStatus = false
+                    boldStatus = false
+                    i += 3
+                }
+            }
+            (line[i] == '~') && (line[i + 1] == '~') ->
+                if (crossedStatus) {
+                    outFile.write("</s>")
+                    crossedStatus = false
+                    i += 2
+                } else {
+                    outFile.write("<s>")
+                    crossedStatus = true
+                    i += 2
+                }
+            else -> {
+                outFile.write(line[i].toString())
+                i++
+            }
+        }
+    }
+}
 
+
+fun markdownToHtmlSimple(inputName: String, outputName: String) {
     val inFile = File(inputName)
     val outFile = File(outputName).bufferedWriter()
     outFile.write("<html>\n<body>\n")
     var paraStatus = true
-    var italicStatus = false
-    var boldStatus = false
-    var crossedStatus = false
-    var prev = ""
     inFile.readLines().forEach {
         line ->
         if (line == "") {
-            if (paraStatus) outFile.write("<p>\n")
-            else paraStatus = true
+            if (!paraStatus) outFile.write("</p>\n")
+            paraStatus = true
         }
         else {
-            if (paraStatus) outFile.write("<p>\n")
-            line.forEach {
-                if (it == '*' ) when (checkStars(prev, italicStatus, boldStatus)) {
-                    0 -> {
-                        italicStatus = true
-                        prev = "*"
-                    }
-                    1 -> {
-                        boldStatus = true
-                        italicStatus = false
-                        prev = ""
-                    }
-                    2 -> {
-                        italicStatus = false
-                        prev = "*"
-                    }
-                    3 -> boldStatus = false
-                }
+            if (paraStatus) {
+                outFile.write("<p>\n")
+                paraStatus = false
             }
+            lineWork(line, outFile)
         }
-
     }
-    outFile.write("/body\n</html>\n")
-} */
+    if (!paraStatus) outFile.write("</p>\n")
+    outFile.write("</body>\n</html>\n")
+    outFile.close()
+}
 
 /**
  * Сложная
