@@ -572,7 +572,7 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
             }
             lineWork(line, outFile, status)
         }
-        outFile.newLine()
+        if (lines.lastIndexOf(line) != lines.size -1) outFile.newLine()
     }
     if (!paraStatus) outFile.write("</p>")
     outFile.write("</body>")
