@@ -543,7 +543,8 @@ fun lineWork (string: String, outFile: BufferedWriter) {
             }
         }
     }
-    outFile.write(replaceWrong(buffer, italicStatus, boldStatus, crossedStatus))
+    if (buffer.length >= 3) buffer = replaceWrong(buffer, italicStatus, boldStatus, crossedStatus)
+    outFile.write(buffer)
 }
 
 
