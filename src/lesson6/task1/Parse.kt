@@ -236,7 +236,7 @@ fun plusMinus(expression: String): Int {
         if (isEven(i)) {
             if (("+-".toList().contains(parts[i][0]))) throw IllegalArgumentException()
             // Подскажите, пожалуйста, возможно ли в Regex делать проверку, чтобы отсеивать вхождения +123 и -123
-            // ибо [\d]+ считает такие вхождения за числа, а [^-+][\d]+ не работает
+            // ибо [\d]+ считает такие вхождения за числа, а [^-+][\d]+ считает их так же числами
             try {
                 numbers.add(parts[i].toInt())
             } catch (e: NumberFormatException){
