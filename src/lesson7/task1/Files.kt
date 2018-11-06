@@ -546,8 +546,6 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
     val outFile = File(outputName).bufferedWriter()
     var buffer = "<html><body>"
     var paraStatus = true
-    var prevLineEmptyFirst = false
-    var prevLineEmptySecond = false
     val status = mutableListOf(false, false, false)
     val lines = inFile.readLines()
     lines.forEach {
@@ -555,24 +553,15 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
         if (line == "") {
             if (!paraStatus) buffer += "</p>"
             paraStatus = true
-            prevLineEmptySecond = prevLineEmptyFirst
-            prevLineEmptyFirst = true
         }
         else {
-            if ((prevLineEmptyFirst) && (prevLineEmptySecond)) {
-                buffer += "<p></p>"
-                prevLineEmptyFirst = false
-                prevLineEmptySecond = false
-            }
             if (paraStatus) {
                 buffer += "<p>"
                 paraStatus = false
-            }
+            } else buffer += "\n"
             buffer += lineWork(line, outFile, status)
-            if (lines.lastIndexOf(line) != lines.size -1) buffer += "\n"
         }
     }
-    if ((prevLineEmptyFirst) && (prevLineEmptySecond)) buffer += "<p></p>"
     if (!paraStatus) buffer += "</p>"
     buffer += "</body></html>"
     outFile.write(replaceWrong(buffer, status))
