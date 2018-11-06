@@ -193,7 +193,6 @@ fun bestLongJump(jumps: String): Int {
  * При нарушении формата входной строки вернуть -1.
  */
 fun bestHighJump(jumps: String): Int {
-    // Должно ли 123 %+ считаться удачным прыжком?
     val parts = jumps.split(" ").toMutableList()
     val allowedChars = "0123456789 %-+".toList()
     if (!isRightString(jumps, allowedChars)) return -1
@@ -238,7 +237,11 @@ fun plusMinus(expression: String): Int {
             if (("+-".toList().contains(parts[i][0]))) throw IllegalArgumentException()
             // Подскажите, пожалуйста, возможно ли в Regex делать проверку, чтобы отсеивать вхождения +123 и -123
             // ибо [\d]+ считает такие вхождения за числа, а [^-+][\d]+ не работает
-            numbers.add(parts[i].toInt())
+            try {
+                numbers.add(parts[i].toInt())
+            } catch (e: NumberFormatException){
+                throw IllegalArgumentException()
+            }
         } else when (parts[i]) {
             "+" -> operations.add(plus)
             "-" -> operations.add(minus)
@@ -317,7 +320,6 @@ fun mostExpensive(description: String): String {
 fun fromRoman(roman: String): Int {
     if (roman.isEmpty()) return -1
     Regex("""^(M*)(D?C{0,3}|C[DM])(L?X{0,3}|X[LC])(V?I{0,3}|I[VX])$""").find(roman) ?: return -1
-    // Regex не отсеивает пустую строку, так и должно быть?
     val convertRoman = mapOf('I' to 1, 'V' to 5, 'X' to 10, 'L' to 50, 'C' to 100, 'D' to 500, 'M' to 1000)
     val parts = roman.toList().map { convertRoman.getOrElse(it) { return -1 } }
     var total = parts[parts.size - 1]
@@ -395,8 +397,6 @@ fun findPair(commands: String, currentIndex: Int): Int {
 
 fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> {
     if (!isRightString(commands, "<>-+[] ".toList())) throw IllegalArgumentException()
-    // Как можно сделать Regex для этого случая?
-    // Regex("""^[-+<>/[/]]+$""") выдает illegal escape для /[ и /]
     for (i in 0 until commands.toList().size) {
         if ((commands.toList()[i] == '[') || (commands.toList()[i] == ']')) findPair(commands, i)
     }
