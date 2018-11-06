@@ -472,7 +472,7 @@ fun replaceWrong (string: String, status: MutableList<Boolean>): String {
     return line
 }
 
-fun lineWork (string: String, outFile: BufferedWriter, status: MutableList<Boolean>) {
+fun lineWork (string: String, outFile: BufferedWriter, status: MutableList<Boolean>): String {
     val line = "$string  "
     var buffer = ""
     var i = 0
@@ -537,16 +537,14 @@ fun lineWork (string: String, outFile: BufferedWriter, status: MutableList<Boole
             }
         }
     }
-    if (buffer.length >= 3) buffer = replaceWrong(buffer, status)
-    outFile.write(buffer)
+    return buffer
 }
 
 
 fun markdownToHtmlSimple(inputName: String, outputName: String) {
     val inFile = File(inputName)
     val outFile = File(outputName).bufferedWriter()
-    outFile.write("<html>")
-    outFile.write("<body>")
+    var buffer = "<html><body>"
     var paraStatus = true
     var prevLineEmptyFirst = false
     var prevLineEmptySecond = false
@@ -555,28 +553,29 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
     lines.forEach {
         line ->
         if (line == "") {
-            if (!paraStatus) outFile.write("</p>")
+            if (!paraStatus) buffer += "</p>"
             paraStatus = true
             prevLineEmptySecond = prevLineEmptyFirst
             prevLineEmptyFirst = true
         }
         else {
             if ((prevLineEmptyFirst) && (prevLineEmptySecond)) {
-                outFile.write("<p></p>")
+                buffer += "<p></p>"
                 prevLineEmptyFirst = false
                 prevLineEmptySecond = false
             }
             if (paraStatus) {
-                outFile.write("<p>")
+                buffer += "<p>"
                 paraStatus = false
             }
-            lineWork(line, outFile, status)
+            buffer += lineWork(line, outFile, status)
+            if (lines.lastIndexOf(line) != lines.size -1) buffer += "\n"
         }
-        if (lines.lastIndexOf(line) != lines.size -1) outFile.newLine()
     }
-    if (!paraStatus) outFile.write("</p>")
-    outFile.write("</body>")
-    outFile.write("</html>")
+    if ((prevLineEmptyFirst) && (prevLineEmptySecond)) buffer += "<p></p>"
+    if (!paraStatus) buffer += "</p>"
+    buffer += "</body></html>"
+    outFile.write(replaceWrong(buffer, status))
     outFile.close()
 }
 
