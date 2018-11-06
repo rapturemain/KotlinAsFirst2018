@@ -445,27 +445,24 @@ fun checkStars (nextFirst: Char, nextSecond: Char, italicStatus: Boolean, boldSt
         }
 }
 
-fun replaceWrong (string: String, italicStatus: Boolean, boldStatus: Boolean, crossedStatus: Boolean): String {
+fun replaceWrong (string: String, status: MutableList<Boolean>): String {
     var line = string
     var nextFirst = line[line.length - 1]
     var nextSecond = line[line.length - 2]
-    var bS = boldStatus
-    var iS = italicStatus
-    var cS = crossedStatus
-    for (i in line.length - 3..0) {
+    for (i in line.length - 3 downTo 0) {
         if ((line[i] == '<') && (nextSecond == '>')) {
             when {
-                (bS) && (nextFirst == 'b') -> {
-                    line = line.replaceRange(i, i + 2, "<i></i>")
-                    bS = false
+                (status[1]) && (nextFirst == 'b') -> {
+                    line = line.replaceRange(i, i + 3, "<i></i>")
+                    status[1] = false
                 }
-                (iS) && (nextFirst == 'i') -> {
-                    line = line.replaceRange(i, i + 2, "*")
-                    iS = false
+                (status[0]) && (nextFirst == 'i') -> {
+                    line = line.replaceRange(i, i + 3, "*")
+                    status[0] = false
                 }
-                (cS) && (nextFirst == 's') -> {
-                    line = line.replaceRange(i, i + 2, "~~")
-                    cS = false
+                (status[2]) && (nextFirst == 's') -> {
+                    line = line.replaceRange(i, i + 3, "~~")
+                    status[2] = false
                 }
             }
         }
@@ -475,65 +472,62 @@ fun replaceWrong (string: String, italicStatus: Boolean, boldStatus: Boolean, cr
     return line
 }
 
-fun lineWork (string: String, outFile: BufferedWriter) {
+fun lineWork (string: String, outFile: BufferedWriter, status: MutableList<Boolean>) {
     val line = "$string  "
-    var italicStatus = false
-    var boldStatus = false
-    var crossedStatus = false
     var buffer = ""
     var i = 0
     while (i < line.length - 2) {
         when {
             line[i] == '*' ->
-                when (checkStars(line[i + 1], line[i + 2], italicStatus, boldStatus)) {
+                when (checkStars(line[i + 1], line[i + 2], status[0], status[1])) {
                 0 -> {
                     if (i < line.length - 1) {
                         buffer += "<i>"
-                        italicStatus = true
+                        status[0] = true
                     } else buffer += "*"
                     i += 1
                 }
                 1 -> {
                     if (i < line.length - 2) {
                         buffer += "<b>"
-                        boldStatus = true
+                        status[1] = true
                     } else buffer += "**"
                     i += 2
                 }
                 2 -> {
                     if (i < line.length - 3) {
                         buffer += "<b><i>"
-                        italicStatus = true
-                        boldStatus = true
+                        status[0] = true
+                        status[1] = true
                     } else buffer += "***"
                     i += 3
                 }
                 3 -> {
                     buffer += "</i>"
-                    italicStatus = false
+                    status[0] = false
                     i += 1
                 }
                 4 -> {
                     buffer += "</b>"
-                    boldStatus = false
+                    status[1] = false
                     i += 2
                 }
                 5 -> {
                     buffer += "</b></i>"
-                    italicStatus = false
-                    boldStatus = false
+                    status[0] = false
+                    status[1] = false
                     i += 3
                 }
             }
             (line[i] == '~') && (line[i + 1] == '~') ->
-                if (crossedStatus) {
+                if (status[2]) {
                     buffer += "</s>"
-                    crossedStatus = false
+                    status[2] = false
                     i += 2
                 } else {
                     if (i < line.length - 2) {
                         buffer += "<s>"
-                        crossedStatus = true
+                        status[2] = true
                     } else buffer += "~~"
                     i += 2
                 }
@@ -543,7 +537,7 @@ fun lineWork (string: String, outFile: BufferedWriter) {
             }
         }
     }
-    if (buffer.length >= 3) buffer = replaceWrong(buffer, italicStatus, boldStatus, crossedStatus)
+    if (buffer.length >= 3) buffer = replaceWrong(buffer, status)
     outFile.write(buffer)
 }
 
@@ -556,6 +550,7 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
     var paraStatus = true
     var prevLineEmptyFirst = false
     var prevLineEmptySecond = false
+    val status = mutableListOf(false, false, false)
     val lines = inFile.readLines()
     lines.forEach {
         line ->
@@ -575,9 +570,9 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
                 outFile.write("<p>")
                 paraStatus = false
             }
-            lineWork(line, outFile)
+            lineWork(line, outFile, status)
         }
-        if (line != lines.last()) outFile.newLine()
+        outFile.newLine()
     }
     if (!paraStatus) outFile.write("</p>")
     outFile.write("</body>")
