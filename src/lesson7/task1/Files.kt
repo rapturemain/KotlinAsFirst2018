@@ -445,11 +445,42 @@ fun checkStars (nextFirst: Char, nextSecond: Char, italicStatus: Boolean, boldSt
         }
 }
 
+fun replaceWrong (string: String, italicStatus: Boolean, boldStatus: Boolean, crossedStatus: Boolean): String {
+    var line = string
+    var nextFirst = line[line.length - 1]
+    var nextSecond = line[line.length - 2]
+    var bS = boldStatus
+    var iS = italicStatus
+    var cS = crossedStatus
+    for (i in line.length - 3..0) {
+        if ((line[i] == '<') && (nextSecond == '>')) {
+            when {
+                (bS) && (nextFirst == 'b') -> {
+                    line = line.replaceRange(i, i + 2, "<i></i>")
+                    bS = false
+                }
+                (iS) && (nextFirst == 'i') -> {
+                    line = line.replaceRange(i, i + 2, "*")
+                    iS = false
+                }
+                (cS) && (nextFirst == 's') -> {
+                    line = line.replaceRange(i, i + 2, "~~")
+                    cS = false
+                }
+            }
+        }
+        nextSecond = nextFirst
+        nextFirst = line[i]
+    }
+    return line
+}
+
 fun lineWork (string: String, outFile: BufferedWriter) {
     val line = "$string  "
     var italicStatus = false
     var boldStatus = false
     var crossedStatus = false
+    var buffer = ""
     var i = 0
     while (i < line.length - 2) {
         when {
@@ -457,38 +488,38 @@ fun lineWork (string: String, outFile: BufferedWriter) {
                 when (checkStars(line[i + 1], line[i + 2], italicStatus, boldStatus)) {
                 0 -> {
                     if (i < line.length - 1) {
-                        outFile.write("<i>")
+                        buffer += "<i>"
                         italicStatus = true
-                    } else outFile.write("*")
+                    } else buffer += "*"
                     i += 1
                 }
                 1 -> {
                     if (i < line.length - 2) {
-                        outFile.write("<b>")
+                        buffer += "<b>"
                         boldStatus = true
-                    } else outFile.write("**")
+                    } else buffer += "**"
                     i += 2
                 }
                 2 -> {
                     if (i < line.length - 3) {
-                        outFile.write("<b><i>")
+                        buffer += "<b><i>"
                         italicStatus = true
                         boldStatus = true
-                    } else outFile.write("***")
+                    } else buffer += "***"
                     i += 3
                 }
                 3 -> {
-                    outFile.write("</i>")
+                    buffer += "</i>"
                     italicStatus = false
                     i += 1
                 }
                 4 -> {
-                    outFile.write("</b>")
+                    buffer += "</b>"
                     boldStatus = false
                     i += 2
                 }
                 5 -> {
-                    outFile.write("</b></i>")
+                    buffer += "</b></i>"
                     italicStatus = false
                     boldStatus = false
                     i += 3
@@ -496,22 +527,23 @@ fun lineWork (string: String, outFile: BufferedWriter) {
             }
             (line[i] == '~') && (line[i + 1] == '~') ->
                 if (crossedStatus) {
-                    outFile.write("</s>")
+                    buffer += "</s>"
                     crossedStatus = false
                     i += 2
                 } else {
                     if (i < line.length - 2) {
-                        outFile.write("<s>")
+                        buffer += "<s>"
                         crossedStatus = true
-                    } else outFile.write("~~")
+                    } else buffer += "~~"
                     i += 2
                 }
             else -> {
-                outFile.write(line[i].toString())
+                buffer += line[i]
                 i++
             }
         }
     }
+    outFile.write(replaceWrong(buffer, italicStatus, boldStatus, crossedStatus))
 }
 
 
@@ -521,23 +553,26 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
     outFile.write("<html>")
     outFile.write("<body>")
     var paraStatus = true
-    var prevLineEmpty = false
+    var prevLineEmptyFirst = false
+    var prevLineEmptySecond = false
     val lines = inFile.readLines()
     lines.forEach {
         line ->
         if (line == "") {
-            when {
-                prevLineEmpty -> outFile.write("<p></p>")
-                !paraStatus -> outFile.write("</p>")
-            }
+            if (!paraStatus) outFile.write("</p>")
             paraStatus = true
-            prevLineEmpty = true
+            prevLineEmptySecond = prevLineEmptyFirst
+            prevLineEmptyFirst = true
         }
         else {
+            if ((prevLineEmptyFirst) && (prevLineEmptySecond)) {
+                outFile.write("<p></p>")
+                prevLineEmptyFirst = false
+                prevLineEmptySecond = false
+            }
             if (paraStatus) {
                 outFile.write("<p>")
                 paraStatus = false
-                prevLineEmpty = false
             }
             lineWork(line, outFile)
         }
