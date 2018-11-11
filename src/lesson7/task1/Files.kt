@@ -2,13 +2,7 @@
 
 package lesson7.task1
 
-import java.io.BufferedWriter
 import java.io.File
-import kotlin.coroutines.experimental.buildIterator
-import kotlin.math.ceil
-import kotlin.math.floor
-import kotlin.math.max
-import kotlin.system.exitProcess
 
 /**
  * Пример
@@ -63,18 +57,16 @@ fun alignFile(inputName: String, lineLength: Int, outputName: String) {
 fun countSubstrings(inputName: String, substrings: List<String>): Map<String, Int> {
     val inFile = File(inputName)
     val map = substrings.map { it to 0 }.toMap().toMutableMap()
-    for (line in inFile.readLines()) {
-        map.forEach {
-            key, value ->
-            val it = key.toLowerCase()
-            var count = value
-            var buffer = line.toLowerCase()
-            while (buffer.contains(it)) {
-                count++
-                buffer = buffer.drop(buffer.indexOf(it) + 1)
-            }
-            map.replace(key, count)
+    val text = inFile.readText().toLowerCase()
+    for ((key, value) in map) {
+        val it = key.toLowerCase()
+        var count = value
+        var buffer = text
+        while (buffer.contains(it)) {
+            count++
+            buffer = buffer.drop(buffer.indexOf(it) + 1)
         }
+        map.replace(key, count)
     }
     return map
 }
@@ -97,32 +89,25 @@ fun sibilants(inputName: String, outputName: String) {
     val inFile = File(inputName)
     val outFile = File(outputName).bufferedWriter()
     val firstChar = "жчшщ".toList()
-    val secondCharWrong = "ыяю".toList()
-    val secondCharRight = "иау".toList()
-    val map = mutableMapOf<String, String>()
-    firstChar.forEach {
-        for (i in 0..2) {
-            map["$it${secondCharWrong[i]}"] = "$it${secondCharRight[i]}"
-        }
-    }
-    inFile.readLines().forEach {
-        line ->
-        val toPut = line.toMutableList()
-        map.forEach {
-            wrong, right ->
-            var buffer = line.toLowerCase()
-            var wasChanged = 0
-            while (buffer.contains(wrong)) {
-                val index = buffer.indexOf(wrong)
-                buffer = buffer.drop(index + 1)
-                toPut[index + 1 + wasChanged] = if (secondCharWrong.contains(toPut[index + 1 + wasChanged]))
-                     right[1]
-                else right[1].toUpperCase()
-                wasChanged += index + 1
+    val replaceMap = mapOf('ы' to 'и', 'я' to 'а', 'ю' to 'у')
+    var prevWrong = false
+    for (char in inFile.readText()) {
+        val it = char.toLowerCase()
+        var upperCase = false
+        if (char.toLowerCase() != char) upperCase = true
+        if (prevWrong) {
+            if (replaceMap.containsKey(it)) when {
+                upperCase -> outFile.write(replaceMap[it].toString().toUpperCase())
+                else -> outFile.write(replaceMap[it].toString())
+            } else {
+                outFile.write(char.toString())
             }
+            prevWrong = false
         }
-        outFile.write(toPut.joinToString(""))
-        outFile.newLine()
+        else {
+            if (firstChar.contains(it)) prevWrong = true
+            outFile.write(char.toString())
+        }
     }
     outFile.close()
 }
@@ -147,19 +132,14 @@ fun sibilants(inputName: String, outputName: String) {
 fun centerFile(inputName: String, outputName: String) {
     val inFile = File(inputName)
     val outFile = File(outputName).bufferedWriter()
-    try {
-        val map = inFile.readLines().map { it.trim { c -> c == ' ' } }
-        val maxLength = map.maxBy { it.length }!!.length
-        map.forEach {
-            val size = it.length
-            outFile.write(it.padStart((maxLength - size) / 2 + size))
-            outFile.newLine()
-        }
-        outFile.close()
-    } catch (e: NullPointerException) {
-        outFile.write("")
-        outFile.close()
+    val map = inFile.readLines().map { it.trim { c -> c == ' ' } }
+    val maxLength = map.maxBy { it.length }!!.length
+    for (it in map) {
+        val size = it.length
+        outFile.write(it.padStart((maxLength - size) / 2 + size))
+        outFile.newLine()
     }
+    outFile.close()
 }
 
 /**
@@ -192,32 +172,27 @@ fun centerFile(inputName: String, outputName: String) {
 fun alignFileByWidth(inputName: String, outputName: String) {
     val inFile = File(inputName)
     val outFile = File(outputName).bufferedWriter()
-    try {
-        val words = inFile.readLines().map { it.trim { c -> c == ' ' }.split(" ").filter { c -> c != "" } }
-        val count = words.map { it.size }
-        val lengths = words.map { it.joinToString(" ").length }
-        val maxLength = lengths.max()!!.toInt()
-        for (i in 0 until words.size) {
-            when {
-                words[i].size == 1 -> outFile.write(words[i][0])
-                words[i].isNotEmpty() -> {
-                    val spaces = maxLength - lengths[i] + count[i] - 1
-                    val gaps = count[i] - 1
-                    if (spaces == count[i] - 1) outFile.write(words[i].joinToString(" "))
-                    else {
-                        val longWords = spaces % gaps
-                        val spaceSize = spaces / gaps
-                        for (j in 0 until longWords) outFile.write("${words[i][j]}${"".padStart(spaceSize + 1)}")
-                        for (j in longWords until gaps) outFile.write("${words[i][j]}${"".padStart(spaceSize)}")
-                        outFile.write(words[i].last())
-                    }
+    val words = inFile.readLines().map { it.trim { c -> c == ' ' }.split(" ").filter { c -> c != "" } }
+    val count = words.map { it.size }
+    val lengths = words.map { it.joinToString(" ").length }
+    val maxLength = lengths.max()!!.toInt()
+    for (i in 0 until words.size) {
+        when {
+            words[i].size == 1 -> outFile.write(words[i][0])
+            words[i].isNotEmpty() -> {
+                val spaces = maxLength - lengths[i] + count[i] - 1
+                val gaps = count[i] - 1
+                if (spaces == count[i] - 1) outFile.write(words[i].joinToString(" "))
+                else {
+                    val longWords = spaces % gaps
+                    val spaceSize = spaces / gaps
+                    for (j in 0 until longWords) outFile.write("${words[i][j]}${"".padStart(spaceSize + 1)}")
+                    for (j in longWords until gaps) outFile.write("${words[i][j]}${"".padStart(spaceSize)}")
+                    outFile.write(words[i].last())
                 }
             }
-            outFile.newLine()
         }
-    } catch (e: NullPointerException) {
-        outFile.write("")
-        outFile.close()
+        outFile.newLine()
     }
     outFile.close()
 }
@@ -240,45 +215,18 @@ fun alignFileByWidth(inputName: String, outputName: String) {
  * Ключи в ассоциативном массиве должны быть в нижнем регистре.
  *
  */
-fun getWords(line: String): List<String> {
-    if (line.isEmpty()) return emptyList()
-    val words = mutableListOf<String>()
-    var word = ""
-    line.toLowerCase().toList().forEach {
-        if ((it >= 'a') && (it  <= 'z') || (it >= 'а') && (it <= 'я') || (it == 'ё')) word += it.toString()
-        else {
-            if (word != "") {
-                words.add(word)
-                word = ""
-            }
-        }
-    }
-    if (word.isNotEmpty()) words.add(word)
-    return words
-}
 
 fun top20Words(inputName: String): Map<String, Int> {
     val inFile = File(inputName)
-    var map = mutableMapOf<String, Int>()
-    inFile.readLines().forEach {
-        line ->
-        val buffer = getWords(line)
-        buffer.forEach {
+    val map = mutableMapOf<String, Int>()
+    for (line in inFile.readLines()) {
+        val buffer = line.toLowerCase().split(Regex("""[^a-zа-яё]+""")).filter { it != ""}
+        for (it in buffer) {
             map[it] = map.getOrDefault(it, 0) + 1
         }
     }
-    map = map.map { it.key to it.value }.sortedBy { it.second }
-            .reversed().toMap().toMutableMap()
-    return if (map.size <= 20) map
-    else {
-        val buffer = mutableMapOf<String, Int>()
-        var count = 0
-        map.forEach { key, value ->
-            if (count < 20) buffer[key] = value
-            count++
-        }
-        buffer
-    }
+    val buffer = map.map { it.key to it.value }.sortedBy { it.second }.reversed()
+    return buffer.take(20).toMap()
 }
 
 /**
@@ -320,7 +268,7 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
     val inFile = File(inputName)
     val outFile = File(outputName).bufferedWriter()
     val mapUpdated = dictionary.map { it.key.toLowerCase() to it.value.toLowerCase() }.toMap()
-    inFile.readText().forEach {
+    for (it in inFile.readText()) {
         if (it.toLowerCase() == it) outFile.write(mapUpdated.getOrDefault(it, it.toString()))
         else {
             val buffer = mapUpdated.getOrDefault(it.toLowerCase(), it.toString())
@@ -360,7 +308,7 @@ fun checkWord (word: String): Boolean {
     listOfChar.sort()
     var prev = listOfChar.first()
     listOfChar.remove(prev)
-    listOfChar.forEach {
+    for (it in listOfChar) {
         if (it == prev) return false
         else prev = it
     }
@@ -372,7 +320,7 @@ fun chooseLongestChaoticWord(inputName: String, outputName: String) {
     val outFile = File(outputName).bufferedWriter()
     val listOfMax = mutableListOf<String>()
     var max = 0
-    inFile.readLines().forEach {
+    for (it in inFile.readLines()) {
         if (checkWord(it)) {
             when {
                 it.length > max -> {
@@ -432,140 +380,8 @@ Suspendisse ~~et elit in enim tempus iaculis~~.
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
  */
 
-// 0 - italics 1 - bold 2 - b+i 3 - !italics 4 - !bold 5 - !b+i
-
-fun checkStars (nextFirst: Char, nextSecond: Char, italicStatus: Boolean, boldStatus: Boolean): Int {
-    return if (nextFirst == '*') {
-        if (nextSecond == '*') {
-                if (boldStatus) 5 else 2
-            } else if (boldStatus) 4 else 1
-        } else {
-            if (italicStatus) 3
-            else 0
-        }
-}
-
-fun replaceWrong (string: String, status: MutableList<Boolean>): String {
-    var line = string
-    var nextFirst = line[line.length - 1]
-    var nextSecond = line[line.length - 2]
-    for (i in line.length - 3 downTo 0) {
-        if ((line[i] == '<') && (nextSecond == '>')) {
-            when {
-                (status[1]) && (nextFirst == 'b') -> {
-                    line = line.replaceRange(i, i + 3, "<i></i>")
-                    status[1] = false
-                }
-                (status[0]) && (nextFirst == 'i') -> {
-                    line = line.replaceRange(i, i + 3, "*")
-                    status[0] = false
-                }
-                (status[2]) && (nextFirst == 's') -> {
-                    line = line.replaceRange(i, i + 3, "~~")
-                    status[2] = false
-                }
-            }
-        }
-        nextSecond = nextFirst
-        nextFirst = line[i]
-    }
-    return line
-}
-
-fun lineWork (string: String, outFile: BufferedWriter, status: MutableList<Boolean>): String {
-    val line = "$string  "
-    var buffer = ""
-    var i = 0
-    while (i < line.length - 2) {
-        when {
-            line[i] == '*' ->
-                when (checkStars(line[i + 1], line[i + 2], status[0], status[1])) {
-                0 -> {
-                    if (i < line.length - 1) {
-                        buffer += "<i>"
-                        status[0] = true
-                    } else buffer += "*"
-                    i += 1
-                }
-                1 -> {
-                    if (i < line.length - 2) {
-                        buffer += "<b>"
-                        status[1] = true
-                    } else buffer += "**"
-                    i += 2
-                }
-                2 -> {
-                    if (i < line.length - 3) {
-                        buffer += "<b><i>"
-                        status[0] = true
-                        status[1] = true
-                    } else buffer += "***"
-                    i += 3
-                }
-                3 -> {
-                    buffer += "</i>"
-                    status[0] = false
-                    i += 1
-                }
-                4 -> {
-                    buffer += "</b>"
-                    status[1] = false
-                    i += 2
-                }
-                5 -> {
-                    buffer += "</b></i>"
-                    status[0] = false
-                    status[1] = false
-                    i += 3
-                }
-            }
-            (line[i] == '~') && (line[i + 1] == '~') ->
-                if (status[2]) {
-                    buffer += "</s>"
-                    status[2] = false
-                    i += 2
-                } else {
-                    if (i < line.length - 2) {
-                        buffer += "<s>"
-                        status[2] = true
-                    } else buffer += "~~"
-                    i += 2
-                }
-            else -> {
-                buffer += line[i]
-                i++
-            }
-        }
-    }
-    return buffer
-}
-
-
 fun markdownToHtmlSimple(inputName: String, outputName: String) {
-    val inFile = File(inputName)
-    val outFile = File(outputName).bufferedWriter()
-    var buffer = "<html><body>"
-    var paraStatus = true
-    val status = mutableListOf(false, false, false)
-    val lines = inFile.readLines()
-    lines.forEach {
-        line ->
-        if (line == "") {
-            if (!paraStatus) buffer += "</p>"
-            paraStatus = true
-        }
-        else {
-            if (paraStatus) {
-                buffer += "<p>"
-                paraStatus = false
-            } else buffer += "\n"
-            buffer += lineWork(line, outFile, status)
-        }
-    }
-    if (!paraStatus) buffer += "</p>"
-    buffer += "</body></html>"
-    outFile.write(replaceWrong(buffer, status))
-    outFile.close()
+    TODO()
 }
 
 /**

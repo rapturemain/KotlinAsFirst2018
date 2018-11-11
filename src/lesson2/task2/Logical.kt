@@ -65,7 +65,8 @@ fun daysInMonth(month: Int, year: Int): Int =
         10 -> 31
         11 -> 30
         12 -> 31
-        else -> if (((year % 4 == 0) && ((year % 100 != 0) || (year % 400 == 0)))) 29 else 28
+        2 -> if (((year % 4 == 0) && ((year % 100 != 0) || (year % 400 == 0)))) 29 else 28
+        else -> 0
     }
 
 /**

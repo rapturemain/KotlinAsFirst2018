@@ -77,24 +77,13 @@ fun main(args: Array<String>) {
  */
 fun dateStrToDigit(str: String): String {
     Regex("""^[\d]+[ ].+[ ][\d]+$""").find(str) ?: return ""
+    val months = listOf("января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября",
+            "ноября", "декабря")
     val parts = str.split(" ")
-    var month = 0
-    when (parts[1]) {
-        "января" -> if (daysInMonth(1, parts[2].toInt()) >= parts[0].toInt()) month = 1
-        "февраля" -> if (daysInMonth(2, parts[2].toInt()) >= parts[0].toInt()) month = 2
-        "марта" -> if (daysInMonth(3, parts[2].toInt()) >= parts[0].toInt()) month = 3
-        "апреля" -> if (daysInMonth(4, parts[2].toInt()) >= parts[0].toInt()) month = 4
-        "мая" -> if (daysInMonth(5, parts[2].toInt()) >= parts[0].toInt()) month = 5
-        "июня" -> if (daysInMonth(6, parts[2].toInt()) >= parts[0].toInt()) month = 6
-        "июля" -> if (daysInMonth(7, parts[2].toInt()) >= parts[0].toInt()) month = 7
-        "августа" -> if (daysInMonth(8, parts[2].toInt()) >= parts[0].toInt()) month = 8
-        "сентября" -> if (daysInMonth(9, parts[2].toInt()) >= parts[0].toInt()) month = 9
-        "октября" -> if (daysInMonth(10, parts[2].toInt()) >= parts[0].toInt()) month = 10
-        "ноября" -> if (daysInMonth(11, parts[2].toInt()) >= parts[0].toInt()) month = 11
-        "декабря" -> if (daysInMonth(12, parts[2].toInt()) >= parts[0].toInt()) month = 12
-    }
-    return if (month == 0) ""
-           else "${twoDigitStr(parts[0].toInt())}.${twoDigitStr(month)}.${parts[2].toInt()}"
+    val month = months.indexOf(parts[1]) + 1
+    return if (daysInMonth(month, parts[2].toInt()) >= parts[0].toInt())
+        "${twoDigitStr(parts[0].toInt())}.${twoDigitStr(month)}.${parts[2].toInt()}"
+           else ""
 }
 
 /**
@@ -109,25 +98,16 @@ fun dateStrToDigit(str: String): String {
  */
 fun dateDigitToStr(digital: String): String {
     Regex("""^[\d]+[.][\d]+[.][\d]+$""").find(digital) ?: return ""
+    val months = listOf("января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября",
+            "ноября", "декабря")
     val parts = digital.split(".")
-    if (parts.size > 3) return ""
-    if (daysInMonth(parts[1].toInt(), parts[2].toInt()) < parts[0].toInt()) return ""
-    val month = when (parts[1].toInt()) {
-        1 -> "января"
-        2 -> "февраля"
-        3 -> "марта"
-        4 -> "апреля"
-        5 -> "мая"
-        6 -> "июня"
-        7 -> "июля"
-        8 -> "августа"
-        9 -> "сентября"
-        10 -> "октября"
-        11 -> "ноября"
-        12 -> "декабря"
-        else -> return ""
+    try {
+        val month = months[parts[1].toInt() - 1]
+        if (daysInMonth(parts[1].toInt(), parts[2].toInt()) < parts[0].toInt()) return ""
+        return "${parts[0].toInt()} $month ${parts[2].toInt()}"
+    } catch (e: IndexOutOfBoundsException) {
+        return ""
     }
-    return "${parts[0].toInt()} $month ${parts[2].toInt()}"
 }
 
 /**
@@ -146,13 +126,13 @@ fun isRightString(string: String, allowedChars: List<Char>): Boolean =
         string.toList().all { allowedChars.contains(it) }
 
 fun flattenPhoneNumber(phone: String): String {
+    val toDelete = " -()+".toList()
+    if (Regex("""^(\+[\d- ]*\d+[\d- ]*)[- ]*(\([\d- ]*\d+[\d- ]*\))[-()\d+ ]+$""").matches(phone))
+        return "+${phone.filter{ !toDelete.contains(it) }}"
     Regex("""^[-()\d+ ]+$""").find(phone) ?: return ""
     Regex("""\d+""").find(phone) ?: return ""
     val chars = phone.toList()
-    val toDelete = " -()+".toList()
-    return "${
-    if (chars.first { it != ' ' } == '+') "+" else ""}${
-    chars.filter { !toDelete.contains(it) }.joinToString("")}"
+    return chars.filter { !toDelete.contains(it) }.joinToString("")
 }
 
 /**
@@ -170,16 +150,8 @@ fun bestLongJump(jumps: String): Int {
     val allowedChars = "0123456789 -%".toList()
     if (!isRightString(jumps, allowedChars)) return -1
     // При слишком большом jumps Regex("""^([-%]|[\d]+)([ ]+([-%]|[\d]+))*$""") выдает StackOverflow
-    val iterator = parts.iterator()
-    for (it in iterator) {
-        try {
-            it.toInt()
-        } catch (e: NumberFormatException){
-            iterator.remove()
-        }
-    }
-    return if (parts.isNotEmpty()) parts.maxBy { it.toInt() }!!.toInt()
-           else -1
+    parts.removeIf { !Regex("""\d+""").matches(it) }
+    return parts.maxBy { it.toInt() }?.toInt() ?: -1
 }
 
 /**
@@ -198,8 +170,7 @@ fun bestHighJump(jumps: String): Int {
     if (!isRightString(jumps, allowedChars)) return -1
     val jumpsHigh = mutableListOf<Int>()
     val jumpsStatus = mutableListOf<Boolean>()
-    val iterator = parts.iterator()
-    for (it in iterator) {
+    for (it in parts) {
         try {
             jumpsHigh.add(it.toInt())
         } catch (e: NumberFormatException) {
@@ -208,11 +179,11 @@ fun bestHighJump(jumps: String): Int {
             if (jumpsStatus.size != jumpsHigh.size) return -1
         }
     }
-   return when {
-       jumpsHigh.isEmpty() || jumpsHigh.size != jumpsStatus.size -> -1
-       !jumpsStatus.contains(true) -> -1
-       else -> jumpsHigh.zip(jumpsStatus).filter { it.second }.maxBy { it.first }!!.first
-   }
+    return when {
+        jumpsHigh.isEmpty() || jumpsHigh.size != jumpsStatus.size -> -1
+        !jumpsStatus.contains(true) -> -1
+        else -> jumpsHigh.zip(jumpsStatus).filter { it.second }.maxBy { it.first }!!.first
+    }
 }
 
 /**
@@ -225,7 +196,7 @@ fun bestHighJump(jumps: String): Int {
  * Про нарушении формата входной строки бросить исключение IllegalArgumentException
  */
 fun plusMinus(expression: String): Int {
-    Regex("""^[\d]+([ ]([-]|[+])[ ][\d]+)*$""").find(expression) ?: throw IllegalArgumentException()
+    Regex("""^\d+( [-+] \d+)*$""").find(expression) ?: throw IllegalArgumentException()
     val parts = expression.split(" ").toMutableList()
     val plus = 1
     val minus = 2
@@ -233,16 +204,8 @@ fun plusMinus(expression: String): Int {
     val numbers = mutableListOf<Int>()
     val operations = mutableListOf(startOfExpression)
     for (i in 0 until parts.size) {
-        if (isEven(i)) {
-            if (("+-".toList().contains(parts[i][0]))) throw IllegalArgumentException()
-            // Подскажите, пожалуйста, возможно ли в Regex делать проверку, чтобы отсеивать вхождения +123 и -123
-            // ибо [\d]+ считает такие вхождения за числа, а [^-+][\d]+ считает их так же числами
-            try {
-                numbers.add(parts[i].toInt())
-            } catch (e: NumberFormatException){
-                throw IllegalArgumentException()
-            }
-        } else when (parts[i]) {
+        if (isEven(i)) numbers.add(parts[i].toInt())
+        else when (parts[i]) {
             "+" -> operations.add(plus)
             "-" -> operations.add(minus)
         }
@@ -291,19 +254,14 @@ fun mostExpensive(description: String): String {
     val parts = description.split(" ").toMutableList()
     val products = mutableListOf<String>()
     val costs = mutableListOf<Double>()
-    for (i in 0 until parts.size) {
-        if (isEven(i)) products.add(parts[i])
-        else try {
-            val buffer = parts[i].toMutableList()
-            buffer.remove(';')
-            costs.add(buffer.joinToString("").toDouble())
-            if (products.size != costs.size) return ""
-        } catch (e:NumberFormatException) {
-            return ""
-        }
+    for (i in 0 until parts.size step 2) products.add(parts[i])
+    for (i in 1 until parts.size step 2) {
+        val buffer = parts[i].toMutableList()
+        buffer.remove(';')
+        if (Regex("""\d+\.\d+""").matches(buffer.joinToString(""))) costs.add(buffer.joinToString("").toDouble())
+        else return ""
     }
-    return if (products.size == costs.size) products.zip(costs).maxBy { it.second }!!.first
-           else ""
+    return products.zip(costs).maxBy { it.second }?.first ?: ""
 }
 
 /**
@@ -405,18 +363,18 @@ fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> {
     var pos = cells / 2
     var index = 0
     var wasOperations = 0
-        while ((wasOperations < limit) && (index < commandChars.size)) {
-            when (commandChars[index]) {
-                '>' -> pos++
-                '<' -> pos--
-                '+' -> cellsList[pos]++
-                '-' -> cellsList[pos]--
-                '[' -> if (cellsList[pos] == 0) index = findPair(commands, index)
-                ']' -> if (cellsList[pos] != 0) index = findPair(commands, index)
-            }
-            index++
-            wasOperations++
-            if ((pos < 0) || (pos >= cells)) throw IllegalStateException()
+    while ((wasOperations < limit) && (index < commandChars.size)) {
+        when (commandChars[index]) {
+            '>' -> pos++
+            '<' -> pos--
+            '+' -> cellsList[pos]++
+            '-' -> cellsList[pos]--
+            '[' -> if (cellsList[pos] == 0) index = findPair(commands, index)
+            ']' -> if (cellsList[pos] != 0) index = findPair(commands, index)
         }
+        index++
+        wasOperations++
+        if ((pos < 0) || (pos >= cells)) throw IllegalStateException()
+    }
     return cellsList
 }
