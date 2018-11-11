@@ -3,6 +3,7 @@
 package lesson7.task1
 
 import java.io.File
+import kotlin.system.exitProcess
 
 /**
  * Пример
@@ -95,18 +96,19 @@ fun sibilants(inputName: String, outputName: String) {
         val it = char.toLowerCase()
         var upperCase = false
         if (char.toLowerCase() != char) upperCase = true
-        if (prevWrong) {
-            if (replaceMap.containsKey(it)) when {
-                upperCase -> outFile.write(replaceMap[it].toString().toUpperCase())
-                else -> outFile.write(replaceMap[it].toString())
-            } else {
-                outFile.write(char.toString())
-            }
-            prevWrong = false
-        }
-        else {
-            if (firstChar.contains(it)) prevWrong = true
+        if (firstChar.contains(it)) {
+            prevWrong = true
             outFile.write(char.toString())
+        } else {
+            if (prevWrong) {
+                if (replaceMap.containsKey(it)) when {
+                    upperCase -> outFile.write(replaceMap[it].toString().toUpperCase())
+                    else -> outFile.write(replaceMap[it].toString())
+                } else {
+                    outFile.write(char.toString())
+                }
+                prevWrong = false
+            } else outFile.write(char.toString())
         }
     }
     outFile.close()
@@ -133,13 +135,18 @@ fun centerFile(inputName: String, outputName: String) {
     val inFile = File(inputName)
     val outFile = File(outputName).bufferedWriter()
     val map = inFile.readLines().map { it.trim { c -> c == ' ' } }
-    val maxLength = map.maxBy { it.length }!!.length
-    for (it in map) {
-        val size = it.length
-        outFile.write(it.padStart((maxLength - size) / 2 + size))
-        outFile.newLine()
+    if (map.isEmpty()) {
+        outFile.write("")
+        outFile.close()
+    } else {
+        val maxLength = map.maxBy { it.length }!!.length
+        for (it in map) {
+            val size = it.length
+            outFile.write(it.padStart((maxLength - size) / 2 + size))
+            outFile.newLine()
+        }
+        outFile.close()
     }
-    outFile.close()
 }
 
 /**
@@ -175,26 +182,31 @@ fun alignFileByWidth(inputName: String, outputName: String) {
     val words = inFile.readLines().map { it.trim { c -> c == ' ' }.split(" ").filter { c -> c != "" } }
     val count = words.map { it.size }
     val lengths = words.map { it.joinToString(" ").length }
-    val maxLength = lengths.max()!!.toInt()
-    for (i in 0 until words.size) {
-        when {
-            words[i].size == 1 -> outFile.write(words[i][0])
-            words[i].isNotEmpty() -> {
-                val spaces = maxLength - lengths[i] + count[i] - 1
-                val gaps = count[i] - 1
-                if (spaces == count[i] - 1) outFile.write(words[i].joinToString(" "))
-                else {
-                    val longWords = spaces % gaps
-                    val spaceSize = spaces / gaps
-                    for (j in 0 until longWords) outFile.write("${words[i][j]}${"".padStart(spaceSize + 1)}")
-                    for (j in longWords until gaps) outFile.write("${words[i][j]}${"".padStart(spaceSize)}")
-                    outFile.write(words[i].last())
+    if (lengths.isEmpty()) {
+        outFile.write("")
+        outFile.close()
+    } else {
+        val maxLength = lengths.max()!!.toInt()
+        for (i in 0 until words.size) {
+            when {
+                words[i].size == 1 -> outFile.write(words[i][0])
+                words[i].isNotEmpty() -> {
+                    val spaces = maxLength - lengths[i] + count[i] - 1
+                    val gaps = count[i] - 1
+                    if (spaces == count[i] - 1) outFile.write(words[i].joinToString(" "))
+                    else {
+                        val longWords = spaces % gaps
+                        val spaceSize = spaces / gaps
+                        for (j in 0 until longWords) outFile.write("${words[i][j]}${"".padStart(spaceSize + 1)}")
+                        for (j in longWords until gaps) outFile.write("${words[i][j]}${"".padStart(spaceSize)}")
+                        outFile.write(words[i].last())
+                    }
                 }
             }
+            outFile.newLine()
         }
-        outFile.newLine()
+        outFile.close()
     }
-    outFile.close()
 }
 
 /**

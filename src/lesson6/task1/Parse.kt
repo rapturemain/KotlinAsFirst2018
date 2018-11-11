@@ -258,8 +258,7 @@ fun mostExpensive(description: String): String {
     for (i in 1 until parts.size step 2) {
         val buffer = parts[i].toMutableList()
         buffer.remove(';')
-        if (Regex("""\d+\.\d+""").matches(buffer.joinToString(""))) costs.add(buffer.joinToString("").toDouble())
-        else return ""
+        costs.add(buffer.joinToString("").toDouble())
     }
     return products.zip(costs).maxBy { it.second }?.first ?: ""
 }

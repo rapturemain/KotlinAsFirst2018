@@ -206,17 +206,20 @@ fun containsIn(a: Map<String, String>, b: Map<String, String>): Boolean = a.all 
  */
 fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Double> {
     val map = mutableMapOf<String, Double>()
-    val buffer = mutableMapOf<String, Pair<Double, Int>>()
-    stockPrices.forEach {
-        (key, value) ->
+    val buffer = mutableMapOf<String, Pair<MutableList<Double>, Int>>()
+    for ((key, value) in stockPrices) {
         if (buffer.containsKey(key)) {
             val (first, second) = buffer.getValue(key)
-            buffer.replace(key, (first to second), (first + value to second + 1))
-        } else buffer[key] = value to 1
+            buffer.replace(key, (first to second), (first to second + 1))
+            buffer[key]!!.first.add(value)
+        } else {
+            buffer[key] = mutableListOf<Double>() to 1
+            buffer[key]!!.first.add(value)
+        }
     }
     buffer.forEach {
         key, value ->
-        map[key] = value.first / value.second
+        map[key] = value.first.fold (0.0) { prev, n -> prev + n / value.second }
     }
     return map
 }
