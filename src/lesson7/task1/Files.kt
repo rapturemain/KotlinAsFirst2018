@@ -393,7 +393,81 @@ Suspendisse ~~et elit in enim tempus iaculis~~.
  */
 
 fun markdownToHtmlSimple(inputName: String, outputName: String) {
-    TODO()
+    val inFile = File(inputName)
+    val outFile = File(outputName).bufferedWriter()
+    val text = "${inFile.readText()}  "
+    var buffer = "<html><body>"
+    var boldStatus = false
+    var italicStatus = false
+    var crossedStatus = false
+    var paraStatus = true
+    var i = 0
+    while (i < text.length - 2) {
+        val first = text[i]
+        val second = text[i + 1]
+        var toAdd = ""
+        if ((first == '\n') && (second == '\r')) {
+            if (!paraStatus) toAdd = "</p>"
+            paraStatus = true
+            i += 1
+        } else when {
+            (first == '*') && (second == '*') -> {
+                if (boldStatus) {
+                    toAdd = "</b>"
+                    boldStatus = false
+                } else {
+                    toAdd = "<b>"
+                    boldStatus = true
+                }
+                i += 2
+            }
+            (first == '*') -> {
+                if (italicStatus) {
+                    toAdd = "</i>"
+                    italicStatus = false
+                } else {
+                    toAdd = "<i>"
+                    italicStatus = true
+                }
+                i += 1
+            }
+            (first == '~') && (second == '~') -> {
+                if (crossedStatus) {
+                    toAdd = "</s>"
+                    crossedStatus = false
+                } else {
+                    toAdd = "<s>"
+                    crossedStatus = true
+                }
+                i += 2
+            }
+            else -> {
+                toAdd = first.toString()
+                i += 1
+            }
+        }
+        if ((first != '\n') && (paraStatus)) {
+            toAdd = "<p>$toAdd"
+            paraStatus = false
+        }
+        buffer = "$buffer$toAdd"
+    }
+    if (italicStatus) {
+        val index = buffer.lastIndexOf("<i>")
+        buffer.replaceRange(index, index + 3, "*")
+    }
+    if (boldStatus) {
+        val index = buffer.lastIndexOf("<b>")
+        buffer.replaceRange(index, index + 3, "<i></i>")
+    }
+    if (crossedStatus) {
+        val index = buffer.lastIndexOf("<s>")
+        buffer.replaceRange(index, index + 3, "~~")
+    }
+    if (!paraStatus) buffer = "$buffer</p>"
+    buffer = "$buffer</body></html>"
+    outFile.write(buffer)
+    outFile.close()
 }
 
 /**
