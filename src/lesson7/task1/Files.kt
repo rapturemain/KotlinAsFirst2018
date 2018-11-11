@@ -406,7 +406,7 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
         val first = text[i]
         val second = text[i + 1]
         var toAdd = ""
-        if ((first == '\n') && (second == '\r')) {
+        if ((first == '\n') && (second == '\n')) {
             if (!paraStatus) toAdd = "</p>"
             paraStatus = true
             i += 1
