@@ -389,7 +389,7 @@ fun htmlWorker(text: String): String {
         val first = text[i]
         val second = text[i + 1]
         var toAdd = ""
-        if ((first == '\n') && (second == '\r')) {
+        if ((first == '\n') && (second == '\n')) {
             // менять второе \n на \r в Windows
             if (!paraStatus) toAdd = "</p>"
             paraStatus = true
