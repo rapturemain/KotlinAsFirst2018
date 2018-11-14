@@ -3,7 +3,6 @@
 package lesson7.task1
 
 import java.io.File
-import kotlin.system.exitProcess
 
 /**
  * Пример
@@ -446,7 +445,7 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
     }
     if (boldStatus) {
         val index = buffer.lastIndexOf("<b>")
-        buffer = buffer.replaceRange(index, index + 3, "<i></i>")
+        buffer = buffer.replaceRange(index, index + 3, "**")
     }
     if (crossedStatus) {
         val index = buffer.lastIndexOf("<s>")
@@ -551,8 +550,85 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
 ///////////////////////////////конец файла//////////////////////////////////////////////////////////////////////////////
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
  */
+fun countSpacesInStart(line: String): Int {
+    var count = 0
+    for (it in line) {
+        if (it != ' ') return count
+        count++
+    }
+    return -1
+}
+
+fun treeWorker(text: List<String>, string: String, spaces: Int, lastIndex: Int): Pair<String, Int> {
+    var buffer = string
+    var i = lastIndex
+    var statusOfNotNum = false
+    var statusOfNum = false
+    var liStatus = false
+    while (i < text.size) {
+        val spacesInStart = countSpacesInStart(text[i])
+        val line = text[i].substring(spacesInStart)
+        when (spacesInStart) {
+            spaces + 4 -> {
+                val pair = treeWorker(text, buffer, spaces + 4, i)
+                buffer = pair.first
+                i = pair.second
+            }
+            spaces - 4 -> {
+                if (liStatus) buffer = "$buffer</li>"
+                if (statusOfNum) buffer = "$buffer</ol>"
+                if (statusOfNotNum) buffer = "$buffer</ul>"
+                return buffer to i
+            }
+            else -> when {
+                line[0] == '*' -> {
+                    if (statusOfNum) {
+                        buffer = "$buffer</ol>"
+                        statusOfNum = false
+                    }
+                    if (!statusOfNotNum) {
+                        buffer = "$buffer<ul>"
+                        statusOfNotNum = true
+                    }
+                    if (liStatus) buffer = "$buffer</li>"
+                    buffer = "$buffer<li>${line.substringAfter('*')}"
+                    liStatus = true
+                    i++
+                }
+                Regex("""\d+\.""").matches("${line.substringBefore('.')}.") -> {
+                    if (statusOfNotNum) {
+                        buffer = "$buffer</ul>"
+                        statusOfNotNum = false
+                    }
+                    if (!statusOfNum) {
+                        buffer = "$buffer<ol>"
+                        statusOfNum = true
+                    }
+                    if (liStatus) buffer = "$buffer</li>"
+                    buffer = "$buffer<li>${line.substringAfter('.')}"
+                    liStatus = true
+                    i++
+
+                }
+                else -> throw IllegalArgumentException()
+            }
+        }
+    }
+    if (liStatus) buffer = "$buffer</li>"
+    if (statusOfNum) buffer = "$buffer</ol>"
+    if (statusOfNotNum) buffer = "$buffer</ul>"
+    return buffer to i
+}
+
 fun markdownToHtmlLists(inputName: String, outputName: String) {
-    TODO()
+    val inFile = File(inputName)
+    val outFile = File(outputName).bufferedWriter()
+    val text = inFile.readLines()
+    var buffer = "<html><body>"
+    buffer = treeWorker(text, buffer, 0, 0).first
+    buffer = "$buffer</body></html>"
+    outFile.write(buffer)
+    outFile.close()
 }
 
 /**

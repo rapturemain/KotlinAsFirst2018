@@ -2,6 +2,7 @@
 
 package lesson6.task1
 
+import jdk.nashorn.internal.objects.Global.Infinity
 import lesson2.task2.daysInMonth
 import lesson3.task1.isEven
 import java.lang.IllegalArgumentException
@@ -231,7 +232,7 @@ fun firstDuplicateIndex(str: String): Int {
 fun mostExpensive(description: String): String {
     val parts = description.split(" ").toMutableList()
     var product = ""
-    var cost = Double.MIN_VALUE
+    var cost = -Infinity
     if (!isEven(parts.size)) return ""
     for (i in 0 until parts.size step 2) {
             Regex("""(\d+\.\d+;?)|(\d+;?)""").find(parts[i + 1]) ?: return ""
