@@ -234,7 +234,7 @@ fun mostExpensive(description: String): String {
     var cost = Double.MIN_VALUE
     if (!isEven(parts.size)) return ""
     for (i in 0 until parts.size step 2) {
-            Regex("""\d+\.\d+;?""").find(parts[i + 1]) ?: return ""
+            Regex("""(\d+\.\d+;?)|(\d+;?)""").find(parts[i + 1]) ?: return ""
             val buffer = parts[i + 1].filter { it != ';' }.toDouble()
             if (buffer >= cost) {
                 product = parts[i]
