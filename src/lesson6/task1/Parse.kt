@@ -5,6 +5,7 @@ package lesson6.task1
 import lesson2.task2.daysInMonth
 import lesson3.task1.isEven
 import java.lang.IllegalArgumentException
+import java.lang.NumberFormatException
 
 /**
  * Пример
@@ -82,7 +83,7 @@ fun dateStrToDigit(str: String): String {
     val parts = str.split(" ")
     val month = months.indexOf(parts[1]) + 1
     return if (daysInMonth(month, parts[2].toInt()) >= parts[0].toInt())
-        "${twoDigitStr(parts[0].toInt())}.${twoDigitStr(month)}.${parts[2].toInt()}"
+              "${twoDigitStr(parts[0].toInt())}.${twoDigitStr(month)}.${parts[2].toInt()}"
            else ""
 }
 
@@ -101,13 +102,10 @@ fun dateDigitToStr(digital: String): String {
     val months = listOf("января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября",
             "ноября", "декабря")
     val parts = digital.split(".")
-    try {
-        val month = months[parts[1].toInt() - 1]
-        if (daysInMonth(parts[1].toInt(), parts[2].toInt()) < parts[0].toInt()) return ""
-        return "${parts[0].toInt()} $month ${parts[2].toInt()}"
-    } catch (e: IndexOutOfBoundsException) {
-        return ""
-    }
+    if (parts[1].toInt() !in 1..12) return ""
+    val month = months[parts[1].toInt() - 1]
+    return if (daysInMonth(parts[1].toInt(), parts[2].toInt()) < parts[0].toInt()) ""
+           else "${parts[0].toInt()} $month ${parts[2].toInt()}"
 }
 
 /**
@@ -126,13 +124,10 @@ fun isRightString(string: String, allowedChars: List<Char>): Boolean =
         string.toList().all { allowedChars.contains(it) }
 
 fun flattenPhoneNumber(phone: String): String {
-    val toDelete = " -()+".toList()
-    if (Regex("""^(\+[\d- ]*\d+[\d- ]*)[- ]*(\([\d- ]*\d+[\d- ]*\))[-()\d+ ]+$""").matches(phone))
-        return "+${phone.filter{ !toDelete.contains(it) }}"
-    Regex("""^[-()\d+ ]+$""").find(phone) ?: return ""
-    Regex("""\d+""").find(phone) ?: return ""
-    val chars = phone.toList()
-    return chars.filter { !toDelete.contains(it) }.joinToString("")
+    Regex("""^(\+[\d-+ ]*\d+[\d-+ ]*)?[-+ ]*(\([\d-+ ]*\d+[\d-+ ]*\))?[-()\d+ ]+$""").find(phone) ?: return ""
+    val buffer = phone.filter { !" -()+".contains(it) }
+    return if (phone[0] == '+') "+$buffer"
+           else buffer
 }
 
 /**
@@ -168,22 +163,14 @@ fun bestHighJump(jumps: String): Int {
     val parts = jumps.split(" ").toMutableList()
     val allowedChars = "0123456789 %-+".toList()
     if (!isRightString(jumps, allowedChars)) return -1
-    val jumpsHigh = mutableListOf<Int>()
-    val jumpsStatus = mutableListOf<Boolean>()
-    for (it in parts) {
-        try {
-            jumpsHigh.add(it.toInt())
-        } catch (e: NumberFormatException) {
-            if (it.contains('+') && !it.contains('-')) jumpsStatus.add(true)
-            else jumpsStatus.add(false)
-            if (jumpsStatus.size != jumpsHigh.size) return -1
-        }
+    var bestJump = -1
+    if (!isEven(parts.size)) return -1
+    for (i in 0 until parts.size step 2) {
+        Regex("""\d+""").find(parts[i]) ?: return -1
+        if ((Regex("""^[^-]*\+[^-]*$""").matches(parts[i + 1])) && (bestJump <= parts[i].toInt()))
+            bestJump = parts[i].toInt()
     }
-    return when {
-        jumpsHigh.isEmpty() || jumpsHigh.size != jumpsStatus.size -> -1
-        !jumpsStatus.contains(true) -> -1
-        else -> jumpsHigh.zip(jumpsStatus).filter { it.second }.maxBy { it.first }!!.first
-    }
+    return bestJump
 }
 
 /**
@@ -198,25 +185,16 @@ fun bestHighJump(jumps: String): Int {
 fun plusMinus(expression: String): Int {
     Regex("""^\d+( [-+] \d+)*$""").find(expression) ?: throw IllegalArgumentException()
     val parts = expression.split(" ").toMutableList()
-    val plus = 1
-    val minus = 2
-    val startOfExpression = 0
-    val numbers = mutableListOf<Int>()
-    val operations = mutableListOf(startOfExpression)
-    for (i in 0 until parts.size) {
-        if (isEven(i)) numbers.add(parts[i].toInt())
-        else when (parts[i]) {
-            "+" -> operations.add(plus)
-            "-" -> operations.add(minus)
+    if (isEven(parts.size)) throw IllegalArgumentException()
+    var value = parts[0].toInt()
+    for (i in 1 until parts.size step 2) {
+        Regex("""\d+""").find(parts[i + 1]) ?: throw IllegalArgumentException()
+        when (parts[i]) {
+            "+" -> value += parts[i + 1].toInt()
+            "-" -> value -= parts[i + 1].toInt()
         }
     }
-    return numbers.zip(operations).fold(0) {prev, it ->
-        when {
-            it.second == plus -> prev + it.first
-            it.second == minus -> prev - it.first
-            else -> prev + it.first
-        }
-    }
+    return value
 }
 
 /**
@@ -252,15 +230,18 @@ fun firstDuplicateIndex(str: String): Int {
  */
 fun mostExpensive(description: String): String {
     val parts = description.split(" ").toMutableList()
-    val products = mutableListOf<String>()
-    val costs = mutableListOf<Double>()
-    for (i in 0 until parts.size step 2) products.add(parts[i])
-    for (i in 1 until parts.size step 2) {
-        val buffer = parts[i].toMutableList()
-        buffer.remove(';')
-        costs.add(buffer.joinToString("").toDouble())
+    var product = ""
+    var cost = Double.MIN_VALUE
+    if (!isEven(parts.size)) return ""
+    for (i in 0 until parts.size step 2) {
+            Regex("""\d+\.\d+;?""").find(parts[i + 1]) ?: return ""
+            val buffer = parts[i + 1].filter { it != ';' }.toDouble()
+            if (buffer >= cost) {
+                product = parts[i]
+                cost = buffer
+            }
     }
-    return products.zip(costs).maxBy { it.second }?.first ?: ""
+    return product
 }
 
 /**
@@ -338,16 +319,13 @@ fun findPair(commands: String, currentIndex: Int): Int {
             count = -1
         }
     }
-    try {
-        while (count != 0) {
-            index += toMove
-            when (commandChars[index]) {
-                '[' -> count++
-                ']' -> count--
-            }
+    while (count != 0) {
+        index += toMove
+        if ((index == -1) || (index == commandChars.size)) throw IllegalArgumentException()
+        when (commandChars[index]) {
+            '[' -> count++
+            ']' -> count--
         }
-    } catch (e:IndexOutOfBoundsException) {
-        throw IllegalArgumentException()
     }
     return index
 }

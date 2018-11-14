@@ -57,17 +57,12 @@ fun alignFile(inputName: String, lineLength: Int, outputName: String) {
  */
 fun countSubstrings(inputName: String, substrings: List<String>): Map<String, Int> {
     val inFile = File(inputName)
-    val map = substrings.map { it to 0 }.toMap().toMutableMap()
+    val map = mutableMapOf<String, Int>()
     val text = inFile.readText().toLowerCase()
-    for ((key, value) in map) {
+    for (key in substrings) {
         val it = key.toLowerCase()
-        var count = value
-        var buffer = text
-        while (buffer.contains(it)) {
-            count++
-            buffer = buffer.drop(buffer.indexOf(it) + 1)
-        }
-        map.replace(key, count)
+        val count = Regex(it).findAll(text).toList().size
+        map[key] = count
     }
     return map
 }
@@ -185,28 +180,28 @@ fun alignFileByWidth(inputName: String, outputName: String) {
     if (lengths.isEmpty()) {
         outFile.write("")
         outFile.close()
-    } else {
-        val maxLength = lengths.max()!!.toInt()
-        for (i in 0 until words.size) {
-            when {
-                words[i].size == 1 -> outFile.write(words[i][0])
-                words[i].isNotEmpty() -> {
-                    val spaces = maxLength - lengths[i] + count[i] - 1
-                    val gaps = count[i] - 1
-                    if (spaces == count[i] - 1) outFile.write(words[i].joinToString(" "))
-                    else {
-                        val longWords = spaces % gaps
-                        val spaceSize = spaces / gaps
-                        for (j in 0 until longWords) outFile.write("${words[i][j]}${"".padStart(spaceSize + 1)}")
-                        for (j in longWords until gaps) outFile.write("${words[i][j]}${"".padStart(spaceSize)}")
-                        outFile.write(words[i].last())
-                    }
+        return
+    }
+    val maxLength = lengths.max()!!.toInt()
+    for (i in 0 until words.size) {
+        when {
+            words[i].size == 1 -> outFile.write(words[i][0])
+            words[i].isNotEmpty() -> {
+                val spaces = maxLength - lengths[i] + count[i] - 1
+                val gaps = count[i] - 1
+                if (spaces == count[i] - 1) outFile.write(words[i].joinToString(" "))
+                else {
+                    val longWords = spaces % gaps
+                    val spaceSize = spaces / gaps
+                    for (j in 0 until longWords) outFile.write("${words[i][j]}${"".padStart(spaceSize + 1)}")
+                    for (j in longWords until gaps) outFile.write("${words[i][j]}${"".padStart(spaceSize)}")
+                    outFile.write(words[i].last())
                 }
             }
-            outFile.newLine()
         }
-        outFile.close()
+        outFile.newLine()
     }
+    outFile.close()
 }
 
 /**
@@ -315,16 +310,9 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
  *
  * Обратите внимание: данная функция не имеет возвращаемого значения
  */
-fun checkWord (word: String): Boolean {
-    val listOfChar = word.toLowerCase().toMutableList()
-    listOfChar.sort()
-    var prev = listOfChar.first()
-    listOfChar.remove(prev)
-    for (it in listOfChar) {
-        if (it == prev) return false
-        else prev = it
-    }
-    return true
+fun checkWord(word: String): Boolean {
+    val listOfChar = word.toLowerCase().map { it to 0 }.toMap()
+    return word.length == listOfChar.size
 }
 
 fun chooseLongestChaoticWord(inputName: String, outputName: String) {
