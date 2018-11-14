@@ -378,11 +378,7 @@ Suspendisse ~~et elit in enim tempus iaculis~~.
  *
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
  */
-
-fun markdownToHtmlSimple(inputName: String, outputName: String) {
-    val inFile = File(inputName)
-    val outFile = File(outputName).bufferedWriter()
-    val text = "${inFile.readText()}  "
+fun htmlWorker(text: String): String {
     var buffer = "<html><body>"
     var boldStatus = false
     var italicStatus = false
@@ -393,7 +389,8 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
         val first = text[i]
         val second = text[i + 1]
         var toAdd = ""
-        if ((first == '\n') && (second == '\n')) {
+        if ((first == '\n') && (second == '\r')) {
+            // менять второе \n на \r в Windows
             if (!paraStatus) toAdd = "</p>"
             paraStatus = true
             i += 1
@@ -452,6 +449,14 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
         buffer = buffer.replaceRange(index, index + 3, "~~")
     }
     if (!paraStatus) buffer = "$buffer</p>"
+    return buffer
+}
+
+fun markdownToHtmlSimple(inputName: String, outputName: String) {
+    val inFile = File(inputName)
+    val outFile = File(outputName).bufferedWriter()
+    val text = "${inFile.readText()}  "
+    var buffer = htmlWorker(text)
     buffer = "$buffer</body></html>"
     outFile.write(buffer)
     outFile.close()
@@ -550,6 +555,32 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
 ///////////////////////////////конец файла//////////////////////////////////////////////////////////////////////////////
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
  */
+fun makeListFromString (text: String): List<List<String>> {
+    var i = 0
+    var index1 = 0
+    var index2 = 0
+    val lines = mutableListOf(mutableListOf(""))
+    while (i < text.length) {
+        if (text[i] == '\n') {
+            if ((i < text.length - 1) && (text[i + 1] == '\n')) {
+                lines.add(mutableListOf(""))
+                index1 = 0
+                index2++
+            }
+            if ((Regex("""[ ]*\*""").find(text.substring(i + 1)) != null) ||
+                    (Regex("""[ ]*\d+\.""").find(text.substring(i + 1)) != null)) {
+                lines[index2].add("")
+                i++
+                index1++
+            }
+        }
+        lines[index2][index1] = "${lines[index2][index1]}${text[i]}"
+        i++
+    }
+    return lines
+}
+
+
 fun countSpacesInStart(line: String): Int {
     var count = 0
     for (it in line) {
@@ -560,6 +591,7 @@ fun countSpacesInStart(line: String): Int {
 }
 
 fun treeWorker(text: List<String>, string: String, spaces: Int, lastIndex: Int): Pair<String, Int> {
+    if (text.isEmpty()) return "" to 0
     var buffer = string
     var i = lastIndex
     var statusOfNotNum = false
@@ -568,49 +600,54 @@ fun treeWorker(text: List<String>, string: String, spaces: Int, lastIndex: Int):
     while (i < text.size) {
         val spacesInStart = countSpacesInStart(text[i])
         val line = text[i].substring(spacesInStart)
-        when (spacesInStart) {
-            spaces + 4 -> {
-                val pair = treeWorker(text, buffer, spaces + 4, i)
-                buffer = pair.first
-                i = pair.second
-            }
-            spaces - 4 -> {
-                if (liStatus) buffer = "$buffer</li>"
-                if (statusOfNum) buffer = "$buffer</ol>"
-                if (statusOfNotNum) buffer = "$buffer</ul>"
-                return buffer to i
-            }
-            else -> when {
-                line[0] == '*' -> {
-                    if (statusOfNum) {
-                        buffer = "$buffer</ol>"
-                        statusOfNum = false
-                    }
-                    if (!statusOfNotNum) {
-                        buffer = "$buffer<ul>"
-                        statusOfNotNum = true
-                    }
-                    if (liStatus) buffer = "$buffer</li>"
-                    buffer = "$buffer<li>${line.substringAfter('*')}"
-                    liStatus = true
-                    i++
+        if ((line[0] != '*') && (!Regex("""\d+\.""").matches("${line.substringBefore('.')}."))) {
+            buffer = "$buffer${text[i]}"
+            i++
+        } else {
+            when (spacesInStart) {
+                spaces + 4 -> {
+                    val pair = treeWorker(text, buffer, spaces + 4, i)
+                    buffer = pair.first
+                    i = pair.second
                 }
-                Regex("""\d+\.""").matches("${line.substringBefore('.')}.") -> {
-                    if (statusOfNotNum) {
-                        buffer = "$buffer</ul>"
-                        statusOfNotNum = false
-                    }
-                    if (!statusOfNum) {
-                        buffer = "$buffer<ol>"
-                        statusOfNum = true
-                    }
+                spaces - 4 -> {
                     if (liStatus) buffer = "$buffer</li>"
-                    buffer = "$buffer<li>${line.substringAfter('.')}"
-                    liStatus = true
-                    i++
+                    if (statusOfNum) buffer = "$buffer</ol>"
+                    if (statusOfNotNum) buffer = "$buffer</ul>"
+                    return buffer to i
+                }
+                else -> when {
+                    line[0] == '*' -> {
+                        if (statusOfNum) {
+                            buffer = "$buffer</ol>"
+                            statusOfNum = false
+                        }
+                        if (!statusOfNotNum) {
+                            buffer = "$buffer<ul>"
+                            statusOfNotNum = true
+                        }
+                        if (liStatus) buffer = "$buffer</li>"
+                        buffer = "$buffer<li>${line.substringAfter('*')}"
+                        liStatus = true
+                        i++
+                    }
+                    Regex("""\d+\.""").matches("${line.substringBefore('.')}.") -> {
+                        if (statusOfNotNum) {
+                            buffer = "$buffer</ul>"
+                            statusOfNotNum = false
+                        }
+                        if (!statusOfNum) {
+                            buffer = "$buffer<ol>"
+                            statusOfNum = true
+                        }
+                        if (liStatus) buffer = "$buffer</li>"
+                        buffer = "$buffer<li>${line.substringAfter('.')}"
+                        liStatus = true
+                        i++
 
+                    }
+                    else -> throw IllegalArgumentException()
                 }
-                else -> throw IllegalArgumentException()
             }
         }
     }
@@ -623,9 +660,10 @@ fun treeWorker(text: List<String>, string: String, spaces: Int, lastIndex: Int):
 fun markdownToHtmlLists(inputName: String, outputName: String) {
     val inFile = File(inputName)
     val outFile = File(outputName).bufferedWriter()
-    val text = inFile.readLines()
+    val text = inFile.readText()
+    val lines = makeListFromString(text)
     var buffer = "<html><body>"
-    buffer = treeWorker(text, buffer, 0, 0).first
+    buffer = treeWorker(lines[0], buffer, 0, 0).first
     buffer = "$buffer</body></html>"
     outFile.write(buffer)
     outFile.close()
@@ -639,8 +677,21 @@ fun markdownToHtmlLists(inputName: String, outputName: String) {
  * - Списки, отделённые друг от друга пустой строкой, являются разными и должны оказаться в разных параграфах выходного файла.
  *
  */
+
 fun markdownToHtml(inputName: String, outputName: String) {
-    TODO()
+    val inFile = File(inputName)
+    val outFile = File(outputName).bufferedWriter()
+    var buffer = ""
+    val text = inFile.readText()
+    val lines = makeListFromString(text)
+    for (it in lines) {
+        buffer = "$buffer${treeWorker(it, buffer, 0, 0).first}\n"
+    }
+    buffer.removeSuffix("\n")
+    buffer = htmlWorker("$buffer  ")
+    buffer = "$buffer</body></html>"
+    outFile.write(buffer)
+    outFile.close()
 }
 
 /**
