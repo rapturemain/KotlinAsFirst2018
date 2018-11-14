@@ -442,15 +442,15 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
     }
     if (italicStatus) {
         val index = buffer.lastIndexOf("<i>")
-        buffer.replaceRange(index, index + 3, "*")
+        buffer = buffer.replaceRange(index, index + 3, "*")
     }
     if (boldStatus) {
         val index = buffer.lastIndexOf("<b>")
-        buffer.replaceRange(index, index + 3, "<i></i>")
+        buffer = buffer.replaceRange(index, index + 3, "<i></i>")
     }
     if (crossedStatus) {
         val index = buffer.lastIndexOf("<s>")
-        buffer.replaceRange(index, index + 3, "~~")
+        buffer = buffer.replaceRange(index, index + 3, "~~")
     }
     if (!paraStatus) buffer = "$buffer</p>"
     buffer = "$buffer</body></html>"
