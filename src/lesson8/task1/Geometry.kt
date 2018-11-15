@@ -198,7 +198,7 @@ fun circleByThreePoints(a: Point, b: Point, c: Point): Circle = TODO()
  * три точки данного множества, либо иметь своим диаметром отрезок,
  * соединяющий две самые удалённые точки в данном множестве.
  */
-fun middlePoint(p1: Point, p2: Point): Point = Point((p1.x + p2.x) / 2, (p1.y + p2.y) / 2)
+fun middlePoint(p1: Point, p2: Point): Point = Point(p1.x / 2 + p2.x / 2, p1.y / 2 + p2.y / 2)
 
 fun halfDist (p1: Point, p2: Point) = p1.distance(p2) / 2
 
@@ -213,7 +213,6 @@ fun minContainingCircle(vararg points: Point): Circle {
             currentCircle = findSecondEdgePoint(points.take(i), it)
         }
     }
-    println(currentCircle)
     return currentCircle
 }
 
@@ -246,16 +245,16 @@ fun findCircumcircleOfTriangle(p1: Point, p2: Point, p3: Point): Circle {
     val b = p1.distance(p3)
     val c = p2.distance(p3)
     if (triangleKind(a, b, c) == -1) {
-        return Circle(Point((p1.x + p2.x + p3.x) / 3, p1.y + p2.y + p3.y / 3), maxOf(a, b, c) / 2)
+        return Circle(Point(p1.x / 3 + p2.x / 3 + p3.x / 3, p1.y / 3 + p2.y / 3 + p3.y / 3), maxOf(a, b, c) / 2)
     }
     val radius = a * b * c / 4 / Triangle(p1, p2, p3).area()
     //  Уравнения прямых серединных перпендикуляров
-    val k1 = -1 * (p2.x - p1.x) / (p2.y - p1.y)
+    val k1 = (p2.x - p1.x) / (p2.y - p1.y)
     var middlePoint = middlePoint(p2, p1)
-    val m1 = middlePoint.y - k1 * middlePoint.x
-    val k2 = -1 * (p3.x - p1.x) / (p3.y - p1.y)
+    val m1 = middlePoint.y + k1 * middlePoint.x
+    val k2 = (p3.x - p1.x) / (p3.y - p1.y)
     middlePoint = middlePoint(p3, p1)
-    val m2 = middlePoint.y - k2 * middlePoint.x
+    val m2 = middlePoint.y + k2 * middlePoint.x
     val x = (m2 - m1) / (k1 - k2)
     val center = Point(x, k1 * x + m1)
     return Circle(center, radius)
