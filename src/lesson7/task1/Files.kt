@@ -685,7 +685,7 @@ fun markdownToHtml(inputName: String, outputName: String) {
     val text = inFile.readText()
     val lines = makeListFromString(text)
     for (it in lines) {
-        buffer = "$buffer${treeWorker(it, buffer, 0, 0).first}\n"
+        buffer = "${treeWorker(it, buffer, 0, 0).first}\n"
     }
     buffer.removeSuffix("\n")
     buffer = htmlWorker("$buffer  ")
