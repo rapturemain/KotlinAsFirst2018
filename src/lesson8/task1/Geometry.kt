@@ -2,6 +2,8 @@
 package lesson8.task1
 
 import lesson1.task1.sqr
+import lesson2.task1.triangleKind
+import java.lang.IllegalArgumentException
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -83,7 +85,7 @@ data class Circle(val center: Point, val radius: Double) {
      *
      * Вернуть true, если и только если окружность содержит данную точку НА себе или ВНУТРИ себя
      */
-    fun contains(p: Point): Boolean = TODO()
+    fun contains(p: Point): Boolean = center.distance(p) <= radius
 }
 
 /**
@@ -196,5 +198,65 @@ fun circleByThreePoints(a: Point, b: Point, c: Point): Circle = TODO()
  * три точки данного множества, либо иметь своим диаметром отрезок,
  * соединяющий две самые удалённые точки в данном множестве.
  */
-fun minContainingCircle(vararg points: Point): Circle = TODO()
+fun middlePoint(p1: Point, p2: Point): Point = Point((p1.x + p2.x) / 2, (p1.y + p2.y) / 2)
 
+fun halfDist (p1: Point, p2: Point) = p1.distance(p2) / 2
+
+fun minContainingCircle(vararg points: Point): Circle {
+    if (points.isEmpty()) throw IllegalArgumentException()
+    val size = points.size
+    if (size == 1) return Circle(points[0], 0.0)
+    var currentCircle = Circle(middlePoint(points[0], points[1]), halfDist(points[0], points[1]))
+    for (i in 2 until size) {
+        val it = points[i]
+        if (!currentCircle.contains(it)) {
+            currentCircle = findSecondEdgePoint(points.take(i), it)
+        }
+    }
+    println(currentCircle)
+    return currentCircle
+}
+
+fun findSecondEdgePoint(points: List<Point>, firstEdgePoint: Point): Circle {
+    val size = points.size
+    var currentCircle = Circle(middlePoint(points[0], firstEdgePoint), halfDist(points[0], firstEdgePoint))
+    for (i in 1 until size) {
+        val it = points[i]
+        if (!currentCircle.contains(it)) {
+            currentCircle = findThirdEdgePoint(points.take(i), firstEdgePoint, it)
+        }
+    }
+    return currentCircle
+}
+
+fun findThirdEdgePoint(points: List<Point>, firstEdgePoint: Point, secondEdgePoint: Point): Circle {
+    val size = points.size
+    var currentCircle = Circle(middlePoint(firstEdgePoint, secondEdgePoint), halfDist(firstEdgePoint, secondEdgePoint))
+    for (i in 0 until size) {
+        val it = points[i]
+        if (!currentCircle.contains(points[i])) {
+            currentCircle = findCircumcircleOfTriangle(firstEdgePoint, secondEdgePoint, it)
+        }
+    }
+    return currentCircle
+}
+
+fun findCircumcircleOfTriangle(p1: Point, p2: Point, p3: Point): Circle {
+    val a = p1.distance(p2)
+    val b = p1.distance(p3)
+    val c = p2.distance(p3)
+    if (triangleKind(a, b, c) == -1) {
+        return Circle(Point((p1.x + p2.x + p3.x) / 3, p1.y + p2.y + p3.y / 3), maxOf(a, b, c) / 2)
+    }
+    val radius = a * b * c / 4 / Triangle(p1, p2, p3).area()
+    // Уравнения прямых серединных перпендикуляров
+    val k1 = -1 * (p2.x - p1.x) / (p2.y - p1.y)
+    var middlePoint = middlePoint(p2, p1)
+    val m1 = middlePoint.y - k1 * middlePoint.x
+    val k2 = -1 * (p3.x - p1.x) / (p3.y - p1.y)
+    middlePoint = middlePoint(p3, p1)
+    val m2 = middlePoint.y - k2 * middlePoint.x
+    val x = (m2 - m1) / (k1 - k2)
+    val center = Point(x, k1 * x + m1)
+    return Circle(center, radius)
+}
