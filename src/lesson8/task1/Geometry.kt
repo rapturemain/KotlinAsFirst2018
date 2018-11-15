@@ -213,7 +213,6 @@ fun minContainingCircle(vararg points: Point): Circle {
             currentCircle = findSecondEdgePoint(points.take(i), it)
         }
     }
-    println(currentCircle)
     return currentCircle
 }
 
@@ -236,6 +235,7 @@ fun findThirdEdgePoint(points: List<Point>, firstEdgePoint: Point, secondEdgePoi
         val it = points[i]
         if (!currentCircle.contains(points[i])) {
             currentCircle = findCircumcircleOfTriangle(firstEdgePoint, secondEdgePoint, it)
+            println("$currentCircle,  --- , $i")
         }
     }
     return currentCircle
@@ -248,8 +248,6 @@ fun findCircumcircleOfTriangle(p1: Point, p2: Point, p3: Point): Circle {
     if (triangleKind(a, b, c) == -1) {
         return Circle(Point((p1.x + p2.x + p3.x) / 3, (p1.y + p2.y + p3.y) / 3), maxOf(a, b, c) / 2)
     }
-    val area = Triangle(p1, p2, p3).area()
-    val radius = a / 4 * b / area * c
     // Уравнения прямых серединных перпендикуляров
     val p12y = p2.y - p1.y
     val p12x = p2.x - p1.x
@@ -265,5 +263,6 @@ fun findCircumcircleOfTriangle(p1: Point, p2: Point, p3: Point): Circle {
     val k = k1 - k2
     val x = m / k
     val center = Point(x, k1 * x + m1)
+    val radius = center.distance(p1)
     return Circle(center, radius)
 }
