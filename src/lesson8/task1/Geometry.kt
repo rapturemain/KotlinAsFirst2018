@@ -249,7 +249,7 @@ fun findCircumcircleOfTriangle(p1: Point, p2: Point, p3: Point): Circle {
         return Circle(Point((p1.x + p2.x + p3.x) / 3, p1.y + p2.y + p3.y / 3), maxOf(a, b, c) / 2)
     }
     val radius = a * b * c / 4 / Triangle(p1, p2, p3).area()
-    // Уравнения прямых серединных перпендикуляров
+    //  Уравнения прямых серединных перпендикуляров
     val k1 = -1 * (p2.x - p1.x) / (p2.y - p1.y)
     var middlePoint = middlePoint(p2, p1)
     val m1 = middlePoint.y - k1 * middlePoint.x
