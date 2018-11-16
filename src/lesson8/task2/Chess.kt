@@ -247,4 +247,43 @@ fun knightMoveNumber(start: Square, end: Square): Int = TODO()
  *
  * Если возможно несколько вариантов самой быстрой траектории, вернуть любой из них.
  */
-fun knightTrajectory(start: Square, end: Square): List<Square> = TODO()
+fun available(current: Square): Set<Square> {
+    val a = 2
+    val b = 1
+    val x = current.column
+    val y = current.row
+    val buffer = mutableSetOf<Square>()
+    if (Square(x + a, y + b).inside()) buffer.add(Square(x + a, y + b))
+    if (Square(x + a, y - b).inside()) buffer.add(Square(x + a, y - b))
+    if (Square(x - a, y + b).inside()) buffer.add(Square(x - a, y + b))
+    if (Square(x - a, y - b).inside()) buffer.add(Square(x - a, y - b))
+    if (Square(x + b, y + a).inside()) buffer.add(Square(x + b, y + a))
+    if (Square(x + b, y - a).inside()) buffer.add(Square(x + b, y - a))
+    if (Square(x - b, y + a).inside()) buffer.add(Square(x - b, y + a))
+    if (Square(x - b, y - a).inside()) buffer.add(Square(x - b, y - a))
+    return buffer
+}
+
+fun knightTrajectory(start: Square, end: Square): List<Square> {
+    if (start == end) return listOf(start)
+    val way = mutableListOf(mutableListOf(start))
+    val wereWas = Array(8) { Array(8) { false } }
+    var lastIndex = 0
+    var wasAdded = 0
+    while (true) {
+        for (i in lastIndex until way.size) {
+            val last = way[i].last()
+            for (it in available(last)) {
+                if (!wereWas[it.column - 1][it.row - 1]) {
+                    wasAdded++
+                    way.add(way[i].toList().toMutableList())
+                    way[i + wasAdded].add(it)
+                    wereWas[it.column - 1][it.row - 1] = true
+                    if (it == end) return way[i + wasAdded]
+                }
+            }
+            lastIndex++
+            wasAdded--
+        }
+    }
+}
