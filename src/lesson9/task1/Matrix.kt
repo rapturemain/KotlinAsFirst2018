@@ -33,8 +33,6 @@ interface Matrix<E> {
 
     /** ------------------------------------------------------------ **/
 
-    val container: Array<MutableList<E>>
-
     /** ------------------------------------------------------------- **/
 
     fun inside(row: Int, column: Int): Boolean
@@ -65,7 +63,7 @@ class MatrixImpl<E>(override val height: Int, override val width: Int, e: E) : M
 
     private val empty = null
 
-    override val container = fillContainer(height, width, e)
+    private val container = MutableList(height) { MutableList(width) { e } }
 
     override fun get(row: Int, column: Int): E =
             when {
@@ -89,7 +87,8 @@ class MatrixImpl<E>(override val height: Int, override val width: Int, e: E) : M
             ((other is Matrix<*>) &&
             (height == other.height) &&
             (width == other.width) &&
-            (container.contentEquals(other.container)))
+            (container.all { that -> that
+                    .all { it?.equals(other[container.indexOf(that), that.indexOf(it)]) ?: false } }))
 
     override fun hashCode(): Int {
         var result = height
@@ -98,7 +97,9 @@ class MatrixImpl<E>(override val height: Int, override val width: Int, e: E) : M
         return result
     }
 
-    override fun toString(): String = TODO()
+    override fun toString(): String {
+        return container.toString()
+    }
 
     override fun inside(row: Int, column: Int): Boolean = ((row in 0..height) && (column in 0..width))
     override fun inside(cell: Cell): Boolean = inside(cell.row, cell.column)
@@ -108,4 +109,3 @@ class MatrixImpl<E>(override val height: Int, override val width: Int, e: E) : M
 
     private fun fillContainer(height: Int, width: Int, e: E) = Array(height) { MutableList(width) { e } }
 }
-
