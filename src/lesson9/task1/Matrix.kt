@@ -33,8 +33,6 @@ interface Matrix<E> {
 
     /** ------------------------------------------------------------ **/
 
-    val container: MutableList<MutableList<E>>
-
     /** ------------------------------------------------------------- **/
 }
 
@@ -59,12 +57,12 @@ class MatrixImpl<E>(override val height: Int, override val width: Int, e: E) : M
 
     private val empty = null
 
-    override val container = MutableList(height) { MutableList(width) { e } }
+    private val container = MutableList(height) { MutableList(width) { e } }
 
     override fun get(row: Int, column: Int): E =
             when {
                 (!inside(row, column)) -> throw IndexOutOfBoundsException()
-                (container[row][column] == null) -> throw NoSuchElementException()
+                (container[row][column] == empty) -> throw NoSuchElementException()
                 else -> container[row][column]
             }
 
@@ -99,14 +97,11 @@ class MatrixImpl<E>(override val height: Int, override val width: Int, e: E) : M
     private fun inside(row: Int, column: Int): Boolean = ((row in 0..height) && (column in 0..width))
     private fun inside(cell: Cell): Boolean = inside(cell.row, cell.column)
 
-    private fun isEqual(row: Int, column: Int, value: E): Boolean = (get(row, column) == value)
-    private fun isEqual(cell: Cell, value: E): Boolean = isEqual(cell.row, cell.column, value)
-
     private fun checkContains(other: Any?): Boolean {
         if (other !is Matrix<*>) return false
         for (i in 0 until height) {
             for (j in 0 until width) {
-                if (container[i][j] != other.container[i][j]) return false
+                if (container[i][j] != other[i, j]) return false
             }
         }
         return true
