@@ -32,8 +32,7 @@ interface Matrix<E> {
     operator fun set(cell: Cell, value: E)
 
     /** ------------------------------------------------------------- **/
-    fun toList(): List<E>
-    fun getCell(value: E): Cell?
+    // fun getCell(value: E): Cell?
 }
 
 /**
@@ -106,13 +105,7 @@ class MatrixImpl<E>(override val height: Int, override val width: Int, e: E) : M
         }
         return true
     }
-
-    override fun toList(): List<E> {
-        val buffer = mutableListOf<E>()
-        for (it in container) buffer.addAll(it)
-        return buffer
-    }
-
+    /*
     override fun getCell(value: E): Cell? {
         for (i in 0 until height) {
             for (j in 0 until width) {
@@ -121,5 +114,5 @@ class MatrixImpl<E>(override val height: Int, override val width: Int, e: E) : M
         }
         return null
     }
-
+    */
 }

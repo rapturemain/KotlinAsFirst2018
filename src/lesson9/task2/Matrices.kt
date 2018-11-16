@@ -1,7 +1,7 @@
 @file:Suppress("UNUSED_PARAMETER")
 package lesson9.task2
 
-import lesson4.task1.abs
+import lesson9.task1.Cell
 import lesson9.task1.Matrix
 import lesson9.task1.createMatrix
 import java.lang.IllegalStateException
@@ -275,9 +275,20 @@ operator fun Matrix<Int>.times(other: Matrix<Int>): Matrix<Int> = TODO(this.toSt
  * 0  4 13  6
  * 3 10 11  8
  */
+fun getCell(matrix: Matrix<Int>, value: Int): Cell? {
+    for (i in 0 until matrix.height) {
+        for (j in 0 until matrix.width) {
+            if (matrix[i, j] == value) return Cell(i, j)
+        }
+    }
+    return null
+}
+// Как реализовать данную функцию как метод в Matrix<E>, если в котоеде выдает Build Error
+// с Class is not abstract and does not implement abstract member fun getCell(): Cell?
+
 fun checkPossibility(matrix: Matrix<Int>, move: Int): Boolean {
-    val cell = matrix.getCell(0) ?: throw IllegalStateException()
-    val moveCell = matrix.getCell(move) ?: throw IllegalStateException()
+    val cell = getCell(matrix, 0) ?: throw IllegalStateException()
+    val moveCell = getCell(matrix, move) ?: throw IllegalStateException()
     return when {
         (cell.row == moveCell.row) && (abs(cell.column - moveCell.column) == 1) -> true
         (cell.column == moveCell.column) && (abs(cell.row - moveCell.row) == 1) -> true
@@ -286,12 +297,12 @@ fun checkPossibility(matrix: Matrix<Int>, move: Int): Boolean {
 }
 
 fun fifteenGameMoves(matrix: Matrix<Int>, moves: List<Int>): Matrix<Int> {
-    val allowedCells = setOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+    val allowedCells = setOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)
     if (!moves.all { allowedCells.contains(it) }) throw IllegalStateException()
-    var cellZero = matrix.getCell(0) ?: throw IllegalStateException()
+    var cellZero = getCell(matrix, 0) ?: throw IllegalStateException()
     for (it in moves) {
         if (!checkPossibility(matrix, it)) throw IllegalStateException()
-        val cell = matrix.getCell(it) ?: throw IllegalStateException()
+        val cell = getCell(matrix, it) ?: throw IllegalStateException()
         matrix[cellZero] = it
         matrix[cell] = 0
         cellZero = cell
