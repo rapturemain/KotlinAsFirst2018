@@ -31,9 +31,9 @@ interface Matrix<E> {
     operator fun set(row: Int, column: Int, value: E)
     operator fun set(cell: Cell, value: E)
 
-    /** ------------------------------------------------------------ **/
-
     /** ------------------------------------------------------------- **/
+    fun toList(): List<E>
+    fun getCell(value: E): Cell?
 }
 
 /**
@@ -44,7 +44,7 @@ interface Matrix<E> {
  * Бросить исключение IllegalArgumentException, если height или width <= 0.
  */
 fun <E> createMatrix(height: Int, width: Int, e: E): Matrix<E> {
-    if ((height <= 0) && (width <= 0)) throw IllegalArgumentException()
+    if ((height <= 0) || (width <= 0)) throw IllegalArgumentException()
     return MatrixImpl(height, width, e)
 }
 
@@ -105,6 +105,21 @@ class MatrixImpl<E>(override val height: Int, override val width: Int, e: E) : M
             }
         }
         return true
+    }
+
+    override fun toList(): List<E> {
+        val buffer = mutableListOf<E>()
+        for (it in container) buffer.addAll(it)
+        return buffer
+    }
+
+    override fun getCell(value: E): Cell? {
+        for (i in 0 until height) {
+            for (j in 0 until width) {
+                if (container[i][j] == value) return Cell(i, j)
+            }
+        }
+        return null
     }
 
 }

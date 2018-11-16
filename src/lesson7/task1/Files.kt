@@ -4,8 +4,6 @@ package lesson7.task1
 
 import lesson3.task1.digitNumber
 import java.io.File
-import java.lang.Math.pow
-import kotlin.math.log10
 
 /**
  * Пример

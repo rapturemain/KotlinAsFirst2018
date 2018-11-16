@@ -1,8 +1,11 @@
 @file:Suppress("UNUSED_PARAMETER")
 package lesson9.task2
 
+import lesson4.task1.abs
 import lesson9.task1.Matrix
 import lesson9.task1.createMatrix
+import java.lang.IllegalStateException
+import kotlin.math.abs
 
 // Все задачи в этом файле требуют наличия реализации интерфейса "Матрица" в Matrix.kt
 
@@ -272,7 +275,29 @@ operator fun Matrix<Int>.times(other: Matrix<Int>): Matrix<Int> = TODO(this.toSt
  * 0  4 13  6
  * 3 10 11  8
  */
-fun fifteenGameMoves(matrix: Matrix<Int>, moves: List<Int>): Matrix<Int> = TODO()
+fun checkPossibility(matrix: Matrix<Int>, move: Int): Boolean {
+    val cell = matrix.getCell(0) ?: throw IllegalStateException()
+    val moveCell = matrix.getCell(move) ?: throw IllegalStateException()
+    return when {
+        (cell.row == moveCell.row) && (abs(cell.column - moveCell.column) == 1) -> true
+        (cell.column == moveCell.column) && (abs(cell.row - moveCell.row) == 1) -> true
+        else -> false
+    }
+}
+
+fun fifteenGameMoves(matrix: Matrix<Int>, moves: List<Int>): Matrix<Int> {
+    val allowedCells = setOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+    if (!moves.all { allowedCells.contains(it) }) throw IllegalStateException()
+    var cellZero = matrix.getCell(0) ?: throw IllegalStateException()
+    for (it in moves) {
+        if (!checkPossibility(matrix, it)) throw IllegalStateException()
+        val cell = matrix.getCell(it) ?: throw IllegalStateException()
+        matrix[cellZero] = it
+        matrix[cell] = 0
+        cellZero = cell
+    }
+    return matrix
+}
 
 /**
  * Очень сложная

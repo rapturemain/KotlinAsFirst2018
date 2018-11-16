@@ -299,7 +299,6 @@ fun findCircumcircleOfTriangle(p1: Point, p2: Point, p3: Point): Circle {
     if (triangleKind(a, b, c) == -1) {
         return Circle(Point((p1.x + p2.x + p3.x) / 3, (p1.y + p2.y + p3.y) / 3), maxOf(a, b, c) / 2)
     }
-    // Уравнения прямых серединных перпендикуляров (тангенс угла удобнее)
     val line1 = bisectorByPoints(p1, p2)
     val line2 = bisectorByPoints(p1, p3)
     val center = line1.crossPoint(line2)
