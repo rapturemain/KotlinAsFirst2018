@@ -36,12 +36,6 @@ interface Matrix<E> {
     val container: MutableList<MutableList<E>>
 
     /** ------------------------------------------------------------- **/
-
-    fun inside(row: Int, column: Int): Boolean
-    fun inside(cell: Cell): Boolean
-
-    fun isEqual(row: Int, column: Int, value: E): Boolean
-    fun isEqual(cell: Cell, value: E): Boolean
 }
 
 /**
@@ -102,11 +96,11 @@ class MatrixImpl<E>(override val height: Int, override val width: Int, e: E) : M
         return container.toString()
     }
 
-    override fun inside(row: Int, column: Int): Boolean = ((row in 0..height) && (column in 0..width))
-    override fun inside(cell: Cell): Boolean = inside(cell.row, cell.column)
+    private fun inside(row: Int, column: Int): Boolean = ((row in 0..height) && (column in 0..width))
+    private fun inside(cell: Cell): Boolean = inside(cell.row, cell.column)
 
-    override fun isEqual(row: Int, column: Int, value: E): Boolean = (get(row, column) == value)
-    override fun isEqual(cell: Cell, value: E): Boolean = isEqual(cell.row, cell.column, value)
+    private fun isEqual(row: Int, column: Int, value: E): Boolean = (get(row, column) == value)
+    private fun isEqual(cell: Cell, value: E): Boolean = isEqual(cell.row, cell.column, value)
 
     private fun checkContains(other: Any?): Boolean {
         if (other !is Matrix<*>) return false
@@ -117,4 +111,5 @@ class MatrixImpl<E>(override val height: Int, override val width: Int, e: E) : M
         }
         return true
     }
+
 }
