@@ -177,7 +177,8 @@ class Line private constructor(val b: Double, val angle: Double) {
 fun lineBySegment(s: Segment): Line {
     val p1 = s.begin
     val p2 = s.end
-    val angle = checkAngle(acos((p2.x - p1.x) / p1.distance(p2)))
+    val angle = if (p1.y > p2.y) checkAngle(acos((p1.x - p2.x) / p1.distance(p2)))
+                else checkAngle(acos((p2.x - p1.x) / p1.distance(p2)))
     return Line(p1, angle)
 }
 
@@ -302,6 +303,6 @@ fun findCircumcircleOfTriangle(p1: Point, p2: Point, p3: Point): Circle {
     val line1 = bisectorByPoints(p1, p2)
     val line2 = bisectorByPoints(p1, p3)
     val center = line1.crossPoint(line2)
-    val radius = center.distance(p1)
+    val radius = maxOf(center.distance(p1), center.distance(p2), center.distance(p3))
     return Circle(center, radius)
 }

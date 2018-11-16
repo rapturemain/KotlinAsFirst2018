@@ -724,7 +724,7 @@ fun markdownToHtml(inputName: String, outputName: String) {
  */
 fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
     val outFile =  File(outputName).bufferedWriter()
-    val maxLength = digitNumber(lhv * rhv.toString().first().toString().toInt())+ digitNumber(rhv)
+    val maxLength = digitNumber(lhv * rhv) + 1
     outFile.write("${lhv.toString().padStart(maxLength)}\n")
     outFile.write("*${rhv.toString().padStart(maxLength - 1)}\n")
     outFile.write("${"".padStart(maxLength, '-')}\n")

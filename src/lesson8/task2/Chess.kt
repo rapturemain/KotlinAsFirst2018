@@ -184,7 +184,7 @@ fun bishopTrajectory(start: Square, end: Square): List<Square> =
  */
 fun kingMoveNumber(start: Square, end: Square): Int =
         when {
-            ((!start.inside()) || (!end.inside())) -> throw  IllegalArgumentException()
+            ((!start.inside()) || (!end.inside())) -> throw IllegalArgumentException()
             (start == end) -> 0
             (rookMoveNumber(start, end) == 1) -> abs(start.row - end.row + start.column - end.column)
             (bishopMoveNumber(start, end) == 1) -> abs(start.row - end.row)
@@ -295,6 +295,7 @@ fun available(current: Square): Set<Square> {
 }
 
 fun knightTrajectory(start: Square, end: Square): List<Square> {
+    if ((!start.inside()) || (!end.inside())) throw IllegalArgumentException()
     if (start == end) return listOf(start)
     val way = mutableListOf(mutableListOf(start))
     val wereWas = Array(8) { Array(8) { false } }
