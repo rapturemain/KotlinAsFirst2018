@@ -154,11 +154,8 @@ class Line private constructor(val b: Double, val angle: Double) {
     fun crossPoint(other: Line): Point {
         val x = (other.b * cos(angle) - b * cos(other.angle)) /
                 (sin(angle) * cos(other.angle) - sin(other.angle) * cos(angle))
-        return when {
-            angle == PI / 2 -> Point(x, tan(other.angle) * x + other.b / cos(other.angle))
-            other.angle != PI / 2 -> Point(x, tan(angle) * x + b / cos(angle))
-            else -> throw IllegalArgumentException()
-        }
+        return if (angle == PI / 2) Point(x, tan(other.angle) * x + other.b / cos(other.angle))
+               else Point(x, tan(angle) * x + b / cos(angle))
     }
 
     override fun equals(other: Any?) = other is Line && angle == other.angle && b == other.b
@@ -180,7 +177,7 @@ class Line private constructor(val b: Double, val angle: Double) {
 fun lineBySegment(s: Segment): Line {
     val p1 = s.begin
     val p2 = s.end
-    val angle = acos((p2.x - p1.x) / p1.distance(p2))
+    val angle = checkAngle(acos((p2.x - p1.x) / p1.distance(p2)))
     return Line(p1, angle)
 }
 

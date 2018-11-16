@@ -410,7 +410,7 @@ Basic, Ruby, Swift.
             File("temp.txt").delete()
         }
 
-        test(199735,
+        test(19935,
              22,
              """
               19935 | 22

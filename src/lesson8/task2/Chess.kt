@@ -117,9 +117,7 @@ fun rookTrajectory(start: Square, end: Square): List<Square> =
  */
 fun bishopMoveNumber(start: Square, end: Square): Int =
         when {
-            ((!start.inside()) || (!end.inside())) -> {
-                throw  IllegalArgumentException()
-            }
+            ((!start.inside()) || (!end.inside())) -> throw  IllegalArgumentException()
             (!isEven(start.column - end.column) != !isEven(start.row - end.row)) -> -1
             (start == end) -> 0
             (abs(start.column - end.column) == abs(start.row - end.row)) -> 1
@@ -184,7 +182,19 @@ fun bishopTrajectory(start: Square, end: Square): List<Square> =
  * Пример: kingMoveNumber(Square(3, 1), Square(6, 3)) = 3.
  * Король может последовательно пройти через клетки (4, 2) и (5, 2) к клетке (6, 3).
  */
-fun kingMoveNumber(start: Square, end: Square): Int = TODO()
+fun kingMoveNumber(start: Square, end: Square): Int =
+        when {
+            ((!start.inside()) || (!end.inside())) -> throw  IllegalArgumentException()
+            (start == end) -> 0
+            (rookMoveNumber(start, end) == 1) -> abs(start.row - end.row + start.column - end.column)
+            (bishopMoveNumber(start, end) == 1) -> abs(start.row - end.row)
+            else -> {
+                val distX = abs(start.column - end.column)
+                val distY = abs(start.row - end.row)
+                if (distX > distY) distX
+                else distY
+            }
+        }
 
 /**
  * Сложная
@@ -200,7 +210,27 @@ fun kingMoveNumber(start: Square, end: Square): Int = TODO()
  *          kingTrajectory(Square(3, 5), Square(6, 2)) = listOf(Square(3, 5), Square(4, 4), Square(5, 3), Square(6, 2))
  * Если возможно несколько вариантов самой быстрой траектории, вернуть любой из них.
  */
-fun kingTrajectory(start: Square, end: Square): List<Square> = TODO()
+fun kingTrajectory(start: Square, end: Square): List<Square> {
+    val way = mutableListOf(start)
+    while (true) {
+        val it = way.last()
+        if (it == end) return way
+        when {
+            rookMoveNumber(it, end) == 1 -> way.add(when {
+                it.column == end.column -> if (it.row > end.row) Square(it.column, it.row - 1)
+                else Square(it.column, it.row + 1)
+                else -> if (it.column > end.column) Square(it.column - 1, it.row)
+                else Square(it.column + 1, it.row)
+            } )
+            else -> when {
+                (it.column > end.column) && (it.row > end.row) -> way.add(Square(it.column - 1, it.row - 1))
+                (it.column > end.column) && (it.row < end.row) -> way.add(Square(it.column - 1, it.row + 1))
+                (it.column < end.column) && (it.row < end.row) -> way.add(Square(it.column + 1, it.row + 1))
+                else -> way.add(Square(it.column + 1, it.row - 1))
+            }
+        }
+    }
+}
 
 /**
  * Сложная
@@ -225,7 +255,7 @@ fun kingTrajectory(start: Square, end: Square): List<Square> = TODO()
  * Пример: knightMoveNumber(Square(3, 1), Square(6, 3)) = 3.
  * Конь может последовательно пройти через клетки (5, 2) и (4, 4) к клетке (6, 3).
  */
-fun knightMoveNumber(start: Square, end: Square): Int = TODO()
+fun knightMoveNumber(start: Square, end: Square): Int = knightTrajectory(start, end).size - 1
 
 /**
  * Очень сложная

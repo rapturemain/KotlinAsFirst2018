@@ -2,7 +2,10 @@
 
 package lesson7.task1
 
+import lesson3.task1.digitNumber
 import java.io.File
+import java.lang.Math.pow
+import kotlin.math.log10
 
 /**
  * Пример
@@ -720,7 +723,20 @@ fun markdownToHtml(inputName: String, outputName: String) {
  *
  */
 fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
-    TODO()
+    val outFile =  File(outputName).bufferedWriter()
+    val maxLength = digitNumber(lhv * rhv.toString().first().toString().toInt())+ digitNumber(rhv)
+    outFile.write("${lhv.toString().padStart(maxLength)}\n")
+    outFile.write("*${rhv.toString().padStart(maxLength - 1)}\n")
+    outFile.write("${"".padStart(maxLength, '-')}\n")
+    outFile.write("${(lhv * rhv.toString().last().toString().toInt()).toString().padStart(maxLength)}\n")
+    var k = 0
+    for (i in digitNumber(rhv) - 2 downTo 0) {
+        k++
+        outFile.write("+${(lhv * rhv.toString()[i].toString().toInt()).toString().padStart(maxLength - 1 - k)}\n")
+    }
+    outFile.write("${"".padStart(maxLength, '-')}\n")
+    outFile.write((lhv * rhv).toString().padStart(maxLength))
+    outFile.close()
 }
 
 
