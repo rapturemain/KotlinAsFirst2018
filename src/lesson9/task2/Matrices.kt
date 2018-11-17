@@ -1,11 +1,14 @@
 @file:Suppress("UNUSED_PARAMETER")
 package lesson9.task2
 
+import lesson1.task1.sqr
+import lesson6.task1.isRightString
 import lesson9.task1.Cell
 import lesson9.task1.Matrix
 import lesson9.task1.createMatrix
 import java.lang.IllegalStateException
-import kotlin.math.abs
+import java.lang.Math.pow
+import kotlin.math.*
 
 // Все задачи в этом файле требуют наличия реализации интерфейса "Матрица" в Matrix.kt
 
@@ -349,4 +352,145 @@ fun fifteenGameMoves(matrix: Matrix<Int>, moves: List<Int>): Matrix<Int> {
  *
  * Перед решением этой задачи НЕОБХОДИМО решить предыдущую
  */
-fun fifteenGameSolution(matrix: Matrix<Int>): List<Int> = TODO()
+fun newMatrix(matrix: Matrix<Int>): Matrix<Int> {
+    val buffer = createMatrix(matrix.height, matrix.width, 0)
+    for (i in 0 until matrix.height) {
+        for (j in 0 until matrix.width) {
+            buffer[i, j] = matrix[i, j]
+        }
+    }
+    return buffer
+}
+
+fun newMove(matrix: Matrix<Int>, move: Int): Matrix<Int> {
+    val cell = getCell(matrix, move) ?: throw IllegalStateException()
+    val cellZero = getCell(matrix, 0) ?: throw IllegalStateException()
+    val newMatrix = newMatrix(matrix)
+    newMatrix[cellZero] = move
+    newMatrix[cell] = 0
+    return newMatrix
+}
+
+fun possibleWays(matrix: Matrix<Int>): List<Int> {
+    val c = getCell(matrix, 0) ?: throw IllegalStateException()
+    val x = c.column
+    val y = c.row
+    val buffer= mutableListOf<Int>()
+    if (y - 1 in 0..3) buffer.add(matrix[y - 1, x])
+    if (y + 1 in 0..3) buffer.add(matrix[y + 1, x])
+    if (x - 1 in 0..3) buffer.add(matrix[y, x - 1])
+    if (x + 1 in 0..3) buffer.add(matrix[y, x + 1])
+    return buffer
+}
+
+fun asFar(matrix: Matrix<Int>, rightR: Matrix<Int>, rightL: Matrix<Int>, multiplayer: Double): Double {
+    var asCloseR = 0.0
+    var asCloseL = 0.0
+    for (i in 0 until 4) {
+        for (j in 0 until 4) {
+            if (matrix[i, j] != 0) {
+                if (matrix[i, j] != rightR[i, j]) {
+                    val cell = getCell(rightR, matrix[i, j]) ?: throw IllegalArgumentException()
+                    asCloseR += abs(i - cell.row) + abs(j - cell.column)
+                    // asCloseR++
+                }
+                if (matrix[i, j] != rightL[i, j]) {
+                    val cell = getCell(rightL, matrix[i, j]) ?: throw IllegalArgumentException()
+                    asCloseL += abs(i - cell.row) + abs(j - cell.column)
+                    // asCloseL++
+                }
+            }
+        }
+    }
+    //return 2 * pow(min(asCloseR, asCloseL), 1.17)
+    return -64.0 + min(asCloseR, asCloseR) * multiplayer
+}
+
+fun getIndexOfClosestCell(list: List<Double>): Int {
+    var min = Double.MAX_VALUE
+    var minIndex = 0
+    for (i in 0 until list.size) {
+        val buffer = list[i]
+        if (buffer <= min) {
+            min = buffer
+            minIndex = i
+        }
+    }
+    return minIndex
+}
+
+fun fifteenGameSolution(matrix: Matrix<Int>): List<Int> {
+
+    /** Создание правильной расстановки **/
+
+    val rightR = createMatrix(4, 4, 0)
+    val rightL = createMatrix(4, 4, 0)
+    var was = 1
+    for (i in 0 until 3) {
+        for (j in 0 until 4) {
+            rightR[i, j] = was
+            rightL[i, j] = was
+            was++
+        }
+    }
+    rightR[3, 0] = 13
+    rightR[3, 3] = 0
+    rightL[3, 0] = 13
+    rightL[3, 3] = 0
+    rightR[3, 1] = 14
+    rightL[3, 1] = 15
+    rightR[3, 2] = 15
+    rightL[3, 2] = 14
+    if ((matrix == rightL) || (matrix == rightR)) return emptyList()
+
+    /** Поиск решения алгоритмом A* по графу возможный расстановок
+     *  contourCell - ячейки контура графа
+     *  contourWay - путь до каждой ячейки контура
+     *  contourWeight - вес каждой ячейки контура
+     *  closedCell - уже пройденные возможные расстановки
+     *
+     *  Поиск наименьшего значения weight
+     *  Поиск соседних ходов, проверка на пройденность
+     *  Расширение контура
+     */
+
+    val contourCell = mutableListOf(matrix)
+    val contourWay = mutableListOf(listOf<Int>())
+    val contourWeight = mutableListOf(0.0)
+    val closedCell = mutableSetOf(matrix.hashCode())
+
+    val multiplayer = asFar(matrix, rightR, rightL, 1.0) / -12.5
+
+    while (true) {
+        val minWeightIndex = getIndexOfClosestCell(contourWeight)
+        val minWeightCell = contourCell[minWeightIndex]
+        val minWeightWay = contourWay[minWeightIndex]
+        closedCell.add(minWeightCell.hashCode())
+        contourCell.removeAt(minWeightIndex)
+        contourWay.removeAt(minWeightIndex)
+        contourWeight.removeAt(minWeightIndex)
+        if (minWeightWay.size > 500) continue
+        val moves = possibleWays(minWeightCell)
+        for (it in moves) {
+            val bufferMatrix = newMove(minWeightCell, it)
+            if (!closedCell.contains(bufferMatrix.hashCode()) && !contourCell.contains(bufferMatrix)) {
+                val bufferWay = minWeightWay.toMutableList()
+                bufferWay.add(it)
+                if ((bufferMatrix == rightL) || (bufferMatrix == rightR)) return bufferWay
+                contourCell.add(bufferMatrix)
+                contourWay.add(bufferWay)
+                contourWeight.add(bufferWay.size + asFar(bufferMatrix, rightR, rightL, multiplayer))
+            }
+        }
+       //if (contourCell.size % 200 == 0) {
+       //     println("${contourWay.last()} | ")
+       //     println(contourWeight[getIndexOfClosestCell(contourWeight)])
+       //}
+    }
+}
+
+fun main(args: Array<String>) {
+    val k = 2.0
+    val z = 1.0 / 1.17
+    println(pow(1.0 / k / z, 1 / (z - 1)))
+}
