@@ -374,15 +374,15 @@ fun possibleWays(matrix: Matrix<Int>): List<Int> {
     val x = c.column
     val y = c.row
     val buffer= mutableListOf<Int>()
-    val blockedCells = mutableSetOf<Int>()
-    for (i in 0 until 4) {
-        if (matrix[0, i] != i + 1) break
-        if (i == 3) blockedCells.addAll(setOf(0, 1, 2, 3))
-    }
-    for (i in 0 until 4) {
-        if (matrix[i, 0] != i + 1) break
-        if (i == 3) blockedCells.addAll(setOf(0, 4, 9, 13))
-    }
+    //val blockedCells = mutableSetOf<Int>()
+    //for (i in 0 until 4) {
+    //    if (matrix[0, i] != i + 1) break
+    //    if (i == 3) blockedCells.addAll(setOf(0, 1, 2, 3))
+    //}
+    //for (i in 0 until 4) {
+    //    if (matrix[i, 0] != i + 1) break
+    //    if (i == 3) blockedCells.addAll(setOf(0, 4, 9, 13))
+    //}
     if (y - 1 in 0..3) buffer.add(matrix[y - 1, x])
     if (y + 1 in 0..3) buffer.add(matrix[y + 1, x])
     if (x - 1 in 0..3) buffer.add(matrix[y, x - 1])
@@ -412,11 +412,11 @@ fun asFar(matrix: Matrix<Int>, rightR: Matrix<Int>, rightL: Matrix<Int>): Double
     }
     var removeEdges = 0
     if ((matrix[0, 0] != rightR[0, 0]) && (matrix[0, 1] == rightR[0, 1]) && (matrix[1, 0] == rightR[1, 0]))
-        removeEdges++
+        removeEdges += 2
     if ((matrix[0, 3] != rightR[0, 3]) && (matrix[0, 2] == rightR[0, 2]) && (matrix[1, 3] == rightR[1, 3]))
-        removeEdges++
+        removeEdges += 2
     if ((matrix[3, 0] != rightR[0, 0]) && (matrix[3, 1] == rightR[3, 1]) && (matrix[2, 0] == rightR[2, 0]))
-        removeEdges++
+        removeEdges += 2
     for (row in 0 until 4) {
         var currentRow = 0
         var prev = 0
@@ -439,9 +439,9 @@ fun asFar(matrix: Matrix<Int>, rightR: Matrix<Int>, rightL: Matrix<Int>): Double
         for (i in 0 until 4) {
             for (j in 0 until 4) {
                 if (matrix[i, column] == rightR[j, column]) {
-                    if ((i == 3) && (column == 3)) removeEdges--
-                    if ((i == 0) && (column == 3)) removeEdges--
-                    if ((i == 0) && (column == 0)) removeEdges--
+                    if ((i == 3) && (column == 3)) removeEdges -= 2
+                    if ((i == 0) && (column == 3)) removeEdges -= 2
+                    if ((i == 0) && (column == 0)) removeEdges -= 2
                     if (prevR > matrix[i, column]) currentColumnR++
                     prevR = matrix[i, column]
                     if (prevL > matrix[i, column]) currentColumnL++
@@ -530,9 +530,9 @@ fun fifteenGameSolution(matrix: Matrix<Int>): List<Int> {
                 contourWeight.add(asFar(bufferMatrix, rightR, rightL))
             }
         }
-       //if (contourCell.size % 200 == 0) {
-       //     println("${contourWay.last()} | ")
-       //     println(contourWeight[getIndexOfClosestCell(contourWeight)])
-       //}
+       if (contourCell.size % 200 == 0) {
+            println("${contourWay.last()} | ")
+            println(contourCell[getIndexOfClosestCell(contourWeight)])
+       }
     }
 }
