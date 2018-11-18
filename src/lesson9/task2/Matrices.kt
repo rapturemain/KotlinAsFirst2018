@@ -405,13 +405,21 @@ fun asFar(matrix: Matrix<Int>, rightR: Matrix<Int>, rightL: Matrix<Int>): Double
         removeEdges += 2
     if ((matrix[3, 0] != rightR[3, 0]) && ((matrix[3, 1] == rightR[3, 1]) || (matrix[3, 1] == rightL[3, 1]))
             && (matrix[2, 0] == rightR[2, 0])) removeEdges += 2
+    var edgeFirst = false
+    var edgeSecond = false
+    var edgeThrid = false
     for (row in 0 until 4) {
         var currentRow = 0
         var prev = 4 * row + 1
         for (i in 0 until 4) {
             for (j in 0 until 4) {
                 if (matrix[row, i] == rightR[row, j]) {
-                    if (prev > matrix[row, i]) currentRow++
+                    if (prev > matrix[row, i]) {
+                        currentRow++
+                        if ((row == 3) && ((i == 1) || (i == 2))) edgeThrid = true
+                        if ((row == 0) && ((i == 3) || (i == 2))) edgeSecond = true
+                        if ((row == 0) && ((i == 1) || (i == 2))) edgeFirst = true
+                    }
                     prev = matrix[row, i]
                 }
             }
@@ -419,9 +427,6 @@ fun asFar(matrix: Matrix<Int>, rightR: Matrix<Int>, rightL: Matrix<Int>): Double
         asCloseR += currentRow * 2
         asCloseL += currentRow * 2
     }
-    var edgeFirst = false
-    var edgeSecond = false
-    var edgeThrid = false
     for (column in 0 until 4) {
         var currentColumnR = 0
         var currentColumnL = 0
@@ -432,16 +437,16 @@ fun asFar(matrix: Matrix<Int>, rightR: Matrix<Int>, rightL: Matrix<Int>): Double
                 if (matrix[i, column] == rightR[j, column]) {
                     if (prevR > matrix[i, column]) {
                         currentColumnR++
-                        if ((i == 3) && (column == 0)) edgeThrid = true
-                        if ((i == 0) && (column == 3)) edgeSecond = true
-                        if ((i == 0) && (column == 0)) edgeFirst = true
+                        if (((i == 3) || (i == 2)) && (column == 0)) edgeThrid = true
+                        if (((i == 1) || (i == 2)) && (column == 3)) edgeSecond = true
+                        if (((i == 1) || (i == 2)) && (column == 0)) edgeFirst = true
                     }
                     prevR = matrix[i, column]
                     if (prevL > matrix[i, column]) {
                         currentColumnL++
-                        if ((i == 3) && (column == 0)) edgeThrid = true
-                        if ((i == 0) && (column == 3)) edgeSecond = true
-                        if ((i == 0) && (column == 0)) edgeFirst = true
+                        if (((i == 3) || (i == 2)) && (column == 0)) edgeThrid = true
+                        if (((i == 1) || (i == 2)) && (column == 3)) edgeSecond = true
+                        if (((i == 1) || (i == 2)) && (column == 0)) edgeFirst = true
                     }
                     prevL = matrix[i, column]
                 }
@@ -453,6 +458,7 @@ fun asFar(matrix: Matrix<Int>, rightR: Matrix<Int>, rightL: Matrix<Int>): Double
     if (edgeFirst) removeEdges -= 2
     if (edgeSecond) removeEdges -= 2
     if (edgeThrid) removeEdges -= 2
+    // if (removeEdges < 0) removeEdges = 0
     return min(asCloseR, asCloseL) + removeEdges
 }
 
@@ -505,7 +511,7 @@ fun fifteenGameSolution(matrix: Matrix<Int>): List<Int> {
     rightR[3, 2] = 15
     rightL[3, 2] = 14
     if ((matrix == rightL) || (matrix == rightR)) return emptyList()
-    if (matrix == zeroStartMatrix) return zeroStartWay
+    // if (matrix == zeroStartMatrix) return zeroStartWay
 
     /** Поиск решения алгоритмом A* по графу возможный расстановок
      *  contourCell - ячейки контура графа

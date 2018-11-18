@@ -266,9 +266,9 @@ class Tests {
                 listOf(8, 9, 10, 11), listOf(12, 13, 14, 15))).assertSolution()
         createMatrix(4, 4, listOf(listOf(5, 1, 6, 11), listOf(15, 13, 2, 10),
                 listOf(12, 8, 4, 7), listOf(9, 3, 14, 0))).assertSolution()
-        createMatrix(4, 4, listOf(listOf(8, 13, 4, 14), listOf(10, 15, 12, 5),
-                listOf(0, 9, 1, 3), listOf(11, 7, 6, 2))).assertSolution()
         createMatrix(4, 4, listOf(listOf(7, 1, 10, 2), listOf(8, 12, 13, 15),
                 listOf(0, 6, 3, 11), listOf(14, 4, 9, 5))).assertSolution()
+        createMatrix(4, 4, listOf(listOf(9, 0, 1, 7), listOf(4, 11, 6, 15),
+                listOf(12, 10, 14, 3), listOf(2, 13, 8, 5))).assertSolution()
     }
 }
