@@ -374,20 +374,10 @@ fun possibleWays(matrix: Matrix<Int>): List<Int> {
     val x = c.column
     val y = c.row
     val buffer= mutableListOf<Int>()
-    //val blockedCells = mutableSetOf<Int>()
-    //for (i in 0 until 4) {
-    //    if (matrix[0, i] != i + 1) break
-    //    if (i == 3) blockedCells.addAll(setOf(0, 1, 2, 3))
-    //}
-    //for (i in 0 until 4) {
-    //    if (matrix[i, 0] != i + 1) break
-    //    if (i == 3) blockedCells.addAll(setOf(0, 4, 9, 13))
-    //}
     if (y - 1 in 0..3) buffer.add(matrix[y - 1, x])
     if (y + 1 in 0..3) buffer.add(matrix[y + 1, x])
     if (x - 1 in 0..3) buffer.add(matrix[y, x - 1])
     if (x + 1 in 0..3) buffer.add(matrix[y, x + 1])
-    // return buffer.filter { !blockedCells.contains(it) }
     return buffer
 }
 
@@ -400,12 +390,10 @@ fun asFar(matrix: Matrix<Int>, rightR: Matrix<Int>, rightL: Matrix<Int>): Double
                 if (matrix[i, j] != rightR[i, j]) {
                     val cell = getCell(rightR, matrix[i, j]) ?: throw IllegalArgumentException()
                     asCloseR += abs(i - cell.row) + abs(j - cell.column)
-                    // asCloseR++
                 }
                 if (matrix[i, j] != rightL[i, j]) {
                     val cell = getCell(rightL, matrix[i, j]) ?: throw IllegalArgumentException()
                     asCloseL += abs(i - cell.row) + abs(j - cell.column)
-                    // asCloseL++
                 }
             }
         }
@@ -530,9 +518,9 @@ fun fifteenGameSolution(matrix: Matrix<Int>): List<Int> {
                 contourWeight.add(asFar(bufferMatrix, rightR, rightL))
             }
         }
-       if (contourCell.size % 200 == 0) {
+       /* if (contourCell.size % 200 == 0) {
             println("${contourWay.last()} | ")
             println(contourCell[getIndexOfClosestCell(contourWeight)])
-       }
+       } */
     }
 }
