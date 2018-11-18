@@ -1,8 +1,6 @@
 @file:Suppress("UNUSED_PARAMETER")
 package lesson9.task2
 
-import lesson1.task1.sqr
-import lesson6.task1.isRightString
 import lesson9.task1.Cell
 import lesson9.task1.Matrix
 import lesson9.task1.createMatrix
@@ -376,14 +374,24 @@ fun possibleWays(matrix: Matrix<Int>): List<Int> {
     val x = c.column
     val y = c.row
     val buffer= mutableListOf<Int>()
+    val blockedCells = mutableSetOf<Int>()
+    for (i in 0 until 4) {
+        if (matrix[0, i] != i + 1) break
+        if (i == 3) blockedCells.addAll(setOf(0, 1, 2, 3))
+    }
+    for (i in 0 until 4) {
+        if (matrix[i, 0] != i + 1) break
+        if (i == 3) blockedCells.addAll(setOf(0, 4, 9, 13))
+    }
     if (y - 1 in 0..3) buffer.add(matrix[y - 1, x])
     if (y + 1 in 0..3) buffer.add(matrix[y + 1, x])
     if (x - 1 in 0..3) buffer.add(matrix[y, x - 1])
     if (x + 1 in 0..3) buffer.add(matrix[y, x + 1])
+    // return buffer.filter { !blockedCells.contains(it) }
     return buffer
 }
 
-fun asFar(matrix: Matrix<Int>, rightR: Matrix<Int>, rightL: Matrix<Int>, multiplayer: Double): Double {
+fun asFar(matrix: Matrix<Int>, rightR: Matrix<Int>, rightL: Matrix<Int>): Double {
     var asCloseR = 0.0
     var asCloseL = 0.0
     for (i in 0 until 4) {
@@ -402,8 +410,49 @@ fun asFar(matrix: Matrix<Int>, rightR: Matrix<Int>, rightL: Matrix<Int>, multipl
             }
         }
     }
-    //return 2 * pow(min(asCloseR, asCloseL), 1.17)
-    return -64.0 + min(asCloseR, asCloseR) * multiplayer
+    var removeEdges = 0
+    if ((matrix[0, 0] != rightR[0, 0]) && (matrix[0, 1] == rightR[0, 1]) && (matrix[1, 0] == rightR[1, 0]))
+        removeEdges++
+    if ((matrix[0, 3] != rightR[0, 3]) && (matrix[0, 2] == rightR[0, 2]) && (matrix[1, 3] == rightR[1, 3]))
+        removeEdges++
+    if ((matrix[3, 0] != rightR[0, 0]) && (matrix[3, 1] == rightR[3, 1]) && (matrix[2, 0] == rightR[2, 0]))
+        removeEdges++
+    for (row in 0 until 4) {
+        var currentRow = 0
+        var prev = 0
+        for (i in 0 until 4) {
+            for (j in 0 until 4) {
+                if (matrix[row, i] == rightR[row, j]) {
+                    if (prev > matrix[row, i]) currentRow++
+                    prev = matrix[row, i]
+                }
+            }
+        }
+        asCloseR += currentRow * 2
+        asCloseL += currentRow * 2
+    }
+    for (column in 0 until 4) {
+        var currentColumnR = 0
+        var currentColumnL = 0
+        var prevR = 0
+        var prevL = 0
+        for (i in 0 until 4) {
+            for (j in 0 until 4) {
+                if (matrix[i, column] == rightR[j, column]) {
+                    if ((i == 3) && (column == 3)) removeEdges--
+                    if ((i == 0) && (column == 3)) removeEdges--
+                    if ((i == 0) && (column == 0)) removeEdges--
+                    if (prevR > matrix[i, column]) currentColumnR++
+                    prevR = matrix[i, column]
+                    if (prevL > matrix[i, column]) currentColumnL++
+                    prevL = matrix[i, column]
+                }
+            }
+        }
+        asCloseR += currentColumnR * 2
+        asCloseL += currentColumnL * 2
+    }
+    return min(asCloseR, asCloseL) + removeEdges
 }
 
 fun getIndexOfClosestCell(list: List<Double>): Int {
@@ -459,8 +508,6 @@ fun fifteenGameSolution(matrix: Matrix<Int>): List<Int> {
     val contourWeight = mutableListOf(0.0)
     val closedCell = mutableSetOf(matrix.hashCode())
 
-    val multiplayer = asFar(matrix, rightR, rightL, 1.0) / -12.5
-
     while (true) {
         val minWeightIndex = getIndexOfClosestCell(contourWeight)
         val minWeightCell = contourCell[minWeightIndex]
@@ -469,7 +516,7 @@ fun fifteenGameSolution(matrix: Matrix<Int>): List<Int> {
         contourCell.removeAt(minWeightIndex)
         contourWay.removeAt(minWeightIndex)
         contourWeight.removeAt(minWeightIndex)
-        if (minWeightWay.size > 500) continue
+        if (minWeightWay.size > 1000) continue
         val moves = possibleWays(minWeightCell)
         for (it in moves) {
             val bufferMatrix = newMove(minWeightCell, it)
@@ -479,7 +526,8 @@ fun fifteenGameSolution(matrix: Matrix<Int>): List<Int> {
                 if ((bufferMatrix == rightL) || (bufferMatrix == rightR)) return bufferWay
                 contourCell.add(bufferMatrix)
                 contourWay.add(bufferWay)
-                contourWeight.add(bufferWay.size + asFar(bufferMatrix, rightR, rightL, multiplayer))
+                //contourWeight.add(bufferWay.size + asFar(bufferMatrix, rightR, rightL))
+                contourWeight.add(asFar(bufferMatrix, rightR, rightL))
             }
         }
        //if (contourCell.size % 200 == 0) {
@@ -487,10 +535,4 @@ fun fifteenGameSolution(matrix: Matrix<Int>): List<Int> {
        //     println(contourWeight[getIndexOfClosestCell(contourWeight)])
        //}
     }
-}
-
-fun main(args: Array<String>) {
-    val k = 2.0
-    val z = 1.0 / 1.17
-    println(pow(1.0 / k / z, 1 / (z - 1)))
 }
