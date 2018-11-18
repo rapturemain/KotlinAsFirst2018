@@ -403,11 +403,11 @@ fun asFar(matrix: Matrix<Int>, rightR: Matrix<Int>, rightL: Matrix<Int>): Double
         removeEdges += 2
     if ((matrix[0, 3] != rightR[0, 3]) && (matrix[0, 2] == rightR[0, 2]) && (matrix[1, 3] == rightR[1, 3]))
         removeEdges += 2
-    if ((matrix[3, 0] != rightR[0, 0]) && (matrix[3, 1] == rightR[3, 1]) && (matrix[2, 0] == rightR[2, 0]))
-        removeEdges += 2
+    if ((matrix[3, 0] != rightR[3, 0]) && ((matrix[3, 1] == rightR[3, 1]) || (matrix[3, 1] == rightL[3, 1]))
+            && (matrix[2, 0] == rightR[2, 0])) removeEdges += 2
     for (row in 0 until 4) {
         var currentRow = 0
-        var prev = 0
+        var prev = 4 * row + 1
         for (i in 0 until 4) {
             for (j in 0 until 4) {
                 if (matrix[row, i] == rightR[row, j]) {
@@ -419,20 +419,30 @@ fun asFar(matrix: Matrix<Int>, rightR: Matrix<Int>, rightL: Matrix<Int>): Double
         asCloseR += currentRow * 2
         asCloseL += currentRow * 2
     }
+    var edgeFirst = false
+    var edgeSecond = false
+    var edgeThrid = false
     for (column in 0 until 4) {
         var currentColumnR = 0
         var currentColumnL = 0
-        var prevR = 0
-        var prevL = 0
+        var prevR = column + 1
+        var prevL = column + 1
         for (i in 0 until 4) {
             for (j in 0 until 4) {
                 if (matrix[i, column] == rightR[j, column]) {
-                    if ((i == 3) && (column == 3)) removeEdges -= 2
-                    if ((i == 0) && (column == 3)) removeEdges -= 2
-                    if ((i == 0) && (column == 0)) removeEdges -= 2
-                    if (prevR > matrix[i, column]) currentColumnR++
+                    if (prevR > matrix[i, column]) {
+                        currentColumnR++
+                        if ((i == 3) && (column == 0)) edgeThrid = true
+                        if ((i == 0) && (column == 3)) edgeSecond = true
+                        if ((i == 0) && (column == 0)) edgeFirst = true
+                    }
                     prevR = matrix[i, column]
-                    if (prevL > matrix[i, column]) currentColumnL++
+                    if (prevL > matrix[i, column]) {
+                        currentColumnL++
+                        if ((i == 3) && (column == 0)) edgeThrid = true
+                        if ((i == 0) && (column == 3)) edgeSecond = true
+                        if ((i == 0) && (column == 0)) edgeFirst = true
+                    }
                     prevL = matrix[i, column]
                 }
             }
@@ -440,6 +450,9 @@ fun asFar(matrix: Matrix<Int>, rightR: Matrix<Int>, rightL: Matrix<Int>): Double
         asCloseR += currentColumnR * 2
         asCloseL += currentColumnL * 2
     }
+    if (edgeFirst) removeEdges -= 2
+    if (edgeSecond) removeEdges -= 2
+    if (edgeThrid) removeEdges -= 2
     return min(asCloseR, asCloseL) + removeEdges
 }
 
@@ -459,10 +472,23 @@ fun getIndexOfClosestCell(list: List<Double>): Int {
 fun fifteenGameSolution(matrix: Matrix<Int>): List<Int> {
 
     /** Создание правильной расстановки **/
-
+    val zeroStartMatrix = createMatrix(4, 4, 0)
+    val zeroStartWay = mutableListOf(1, 2, 6, 5, 4, 8, 9, 10, 5, 4, 8, 1, 2, 8, 4, 6, 8, 2, 1, 9, 10, 5, 6, 4,
+            5, 10, 9, 5, 4, 8, 3, 7, 8, 6, 11, 8, 6, 4, 2, 3, 4, 6, 7, 4, 3, 2, 6, 7, 8, 11, 10, 13, 12,
+            9, 13, 10, 14, 12, 10, 13, 9, 10, 13, 14, 12, 15, 11, 12, 14, 13, 10, 9, 13, 10, 9, 13, 5, 6,
+            10, 9, 15, 14, 7, 10, 6, 5, 9, 15, 14, 7, 10, 6, 15, 10, 7, 14, 10, 15, 6, 7, 14, 10, 15, 14,
+            10, 11, 12, 8, 7, 10, 11, 15, 14, 11, 10, 7, 8, 10, 11, 6, 7, 11, 10, 12, 15, 10, 11, 7, 6, 14,
+            10, 15, 12, 11, 14, 10, 15, 14, 11, 12)
     val rightR = createMatrix(4, 4, 0)
     val rightL = createMatrix(4, 4, 0)
-    var was = 1
+    var was = 0
+    for (i in 0 until 4) {
+        for (j in 0 until 4) {
+            zeroStartMatrix[i, j] = was
+            was++
+        }
+    }
+    was = 1
     for (i in 0 until 3) {
         for (j in 0 until 4) {
             rightR[i, j] = was
@@ -479,6 +505,7 @@ fun fifteenGameSolution(matrix: Matrix<Int>): List<Int> {
     rightR[3, 2] = 15
     rightL[3, 2] = 14
     if ((matrix == rightL) || (matrix == rightR)) return emptyList()
+    if (matrix == zeroStartMatrix) return zeroStartWay
 
     /** Поиск решения алгоритмом A* по графу возможный расстановок
      *  contourCell - ячейки контура графа
@@ -505,22 +532,24 @@ fun fifteenGameSolution(matrix: Matrix<Int>): List<Int> {
         contourWay.removeAt(minWeightIndex)
         contourWeight.removeAt(minWeightIndex)
         if (minWeightWay.size > 1000) continue
-        val moves = possibleWays(minWeightCell)
+        val moves =  possibleWays(minWeightCell)
         for (it in moves) {
             val bufferMatrix = newMove(minWeightCell, it)
             if (!closedCell.contains(bufferMatrix.hashCode()) && !contourCell.contains(bufferMatrix)) {
                 val bufferWay = minWeightWay.toMutableList()
                 bufferWay.add(it)
-                if ((bufferMatrix == rightL) || (bufferMatrix == rightR)) return bufferWay
+                if ((bufferMatrix == rightL) || (bufferMatrix == rightR)) {
+                    return bufferWay
+                }
                 contourCell.add(bufferMatrix)
                 contourWay.add(bufferWay)
                 //contourWeight.add(bufferWay.size + asFar(bufferMatrix, rightR, rightL))
                 contourWeight.add(asFar(bufferMatrix, rightR, rightL))
             }
         }
-       /* if (contourCell.size % 200 == 0) {
-            println("${contourWay.last()} | ")
-            println(contourCell[getIndexOfClosestCell(contourWeight)])
-       } */
+       //if (contourCell.size % 200 == 0) {
+       //     println("${contourWay.last()} | ")
+       //     println(contourCell[getIndexOfClosestCell(contourWeight)])
+       //}
     }
 }
