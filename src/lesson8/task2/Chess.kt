@@ -36,7 +36,7 @@ data class Square(val column: Int, val row: Int) {
  */
 fun square(notation: String): Square =
         if (Regex("""^[a-h][1-8]$""").matches(notation)) {
-            Square("abcdefgh".indexOf(notation[0]) + 1, notation[1].toString().toInt())
+            Square(notation[0] - 'a' + 1, notation[1].toString().toInt())
         } else throw IllegalArgumentException()
 
 
@@ -155,8 +155,6 @@ fun bishopTrajectory(start: Square, end: Square): List<Square> =
                 val secondRow = secondColumn + end.row - end.column
                 val first = Square(firstColumn, firstRow)
                 val second = Square(secondColumn, secondRow)
-                println(first)
-                println(second)
                 if (first.inside()) listOf(start, first, end)
                 else listOf(start, second, end)
             }

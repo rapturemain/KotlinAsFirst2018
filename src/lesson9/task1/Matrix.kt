@@ -76,11 +76,15 @@ class MatrixImpl<E>(override val height: Int, override val width: Int, e: E) : M
         set(cell.row, cell.column, value)
     }
 
-    override fun equals(other: Any?) =
-            ((other is Matrix<*>) &&
-            (height == other.height) &&
-            (width == other.width) &&
-            (checkContains(other)))
+    override fun equals(other: Any?): Boolean {
+        if ((other !is Matrix<*>) || (height != other.height) || (width != other.width)) return false
+        for (i in 0 until height) {
+            for (j in 0 until width) {
+                if (container[i][j] != other[i, j]) return false
+            }
+        }
+        return true
+    }
 
     override fun hashCode(): Int {
         var result = height
@@ -89,22 +93,11 @@ class MatrixImpl<E>(override val height: Int, override val width: Int, e: E) : M
         return result
     }
 
-    override fun toString(): String {
-        return container.toString()
-    }
+    override fun toString(): String = container.toString()
 
     private fun inside(row: Int, column: Int): Boolean = ((row in 0..height) && (column in 0..width))
     private fun inside(cell: Cell): Boolean = inside(cell.row, cell.column)
 
-    private fun checkContains(other: Any?): Boolean {
-        if (other !is Matrix<*>) return false
-        for (i in 0 until height) {
-            for (j in 0 until width) {
-                if (container[i][j] != other[i, j]) return false
-            }
-        }
-        return true
-    }
     /*
     override fun getCell(value: E): Cell? {
         for (i in 0 until height) {

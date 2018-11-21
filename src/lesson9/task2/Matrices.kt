@@ -1,6 +1,7 @@
 @file:Suppress("UNUSED_PARAMETER")
 package lesson9.task2
 
+import lesson3.task1.factorial
 import lesson9.task1.Cell
 import lesson9.task1.Matrix
 import lesson9.task1.createMatrix
@@ -387,19 +388,15 @@ fun asFar(matrix: Matrix<Int>, rightR: Matrix<Int>, rightL: Matrix<Int>): Double
     for (i in 0 until 4) {
         for (j in 0 until 4) {
             if (matrix[i, j] != 0) {
-                if (matrix[i, j] != rightR[i, j]) {
-                    val cell = getCell(rightR, matrix[i, j]) ?: throw IllegalArgumentException()
-                    asCloseR += abs(i - cell.row) + abs(j - cell.column)
-                }
-                if (matrix[i, j] != rightL[i, j]) {
-                    val cell = getCell(rightL, matrix[i, j]) ?: throw IllegalArgumentException()
-                    asCloseL += abs(i - cell.row) + abs(j - cell.column)
-                }
+                var cell = getCell(rightR, matrix[i, j]) ?: throw IllegalArgumentException()
+                asCloseR += abs(i - cell.row) + abs(j - cell.column)
+                cell = getCell(rightL, matrix[i, j]) ?: throw IllegalArgumentException()
+                asCloseL += abs(i - cell.row) + abs(j - cell.column)
             }
         }
     }
     var removeEdges = 0
-    if ((matrix[0, 0] != rightR[0, 0]) && (matrix[0, 1] == rightR[0, 1]) && (matrix[1, 0] == rightR[1, 0]))
+    if ((matrix[0, 0] != rightR[0, 0]) && (matrix[1, 0] == rightR[1, 0]) && (matrix[0, 1] == rightR[0, 1]))
         removeEdges += 2
     if ((matrix[0, 3] != rightR[0, 3]) && (matrix[0, 2] == rightR[0, 2]) && (matrix[1, 3] == rightR[1, 3]))
         removeEdges += 2
@@ -413,7 +410,7 @@ fun asFar(matrix: Matrix<Int>, rightR: Matrix<Int>, rightL: Matrix<Int>): Double
         var prev = 4 * row + 1
         for (i in 0 until 4) {
             for (j in 0 until 4) {
-                if (matrix[row, i] == rightR[row, j]) {
+                if ((matrix[row, i] != 0) && (matrix[row, i] == rightR[row, j])) {
                     if (prev > matrix[row, i]) {
                         currentRow++
                         if ((row == 3) && ((i == 1) || (i == 2))) edgeThrid = true
@@ -424,36 +421,33 @@ fun asFar(matrix: Matrix<Int>, rightR: Matrix<Int>, rightL: Matrix<Int>): Double
                 }
             }
         }
-        asCloseR += currentRow * 2
-        asCloseL += currentRow * 2
+        val buffer = factorial(currentRow + 1) / factorial(currentRow - 1)
+        if (buffer != -1.0) {
+            asCloseR += buffer
+            asCloseL += buffer
+        }
     }
     for (column in 0 until 4) {
-        var currentColumnR = 0
-        var currentColumnL = 0
-        var prevR = column + 1
-        var prevL = column + 1
+        var currentColumn = 0
+        var prev = column + 1
         for (i in 0 until 4) {
             for (j in 0 until 4) {
-                if (matrix[i, column] == rightR[j, column]) {
-                    if (prevR > matrix[i, column]) {
-                        currentColumnR++
+                if ((matrix[i, column] != 0) && (matrix[i, column] == rightR[j, column])) {
+                    if (prev > matrix[i, column]) {
+                        currentColumn++
                         if (((i == 3) || (i == 2)) && (column == 0)) edgeThrid = true
                         if (((i == 1) || (i == 2)) && (column == 3)) edgeSecond = true
                         if (((i == 1) || (i == 2)) && (column == 0)) edgeFirst = true
                     }
-                    prevR = matrix[i, column]
-                    if (prevL > matrix[i, column]) {
-                        currentColumnL++
-                        if (((i == 3) || (i == 2)) && (column == 0)) edgeThrid = true
-                        if (((i == 1) || (i == 2)) && (column == 3)) edgeSecond = true
-                        if (((i == 1) || (i == 2)) && (column == 0)) edgeFirst = true
-                    }
-                    prevL = matrix[i, column]
+                    prev = matrix[i, column]
                 }
             }
         }
-        asCloseR += currentColumnR * 2
-        asCloseL += currentColumnL * 2
+        val buffer = factorial(currentColumn + 1) / factorial(currentColumn - 1)
+        if (buffer != -1.0) {
+            asCloseR += buffer
+            asCloseL += buffer
+        }
     }
     if (edgeFirst) removeEdges -= 2
     if (edgeSecond) removeEdges -= 2
@@ -511,7 +505,7 @@ fun fifteenGameSolution(matrix: Matrix<Int>): List<Int> {
     rightR[3, 2] = 15
     rightL[3, 2] = 14
     if ((matrix == rightL) || (matrix == rightR)) return emptyList()
-    // if (matrix == zeroStartMatrix) return zeroStartWay
+    if (matrix == zeroStartMatrix) return zeroStartWay
 
     /** Поиск решения алгоритмом A* по графу возможный расстановок
      *  contourCell - ячейки контура графа
@@ -553,9 +547,9 @@ fun fifteenGameSolution(matrix: Matrix<Int>): List<Int> {
                 contourWeight.add(asFar(bufferMatrix, rightR, rightL))
             }
         }
-       //if (contourCell.size % 200 == 0) {
-       //     println("${contourWay.last()} | ")
-       //     println(contourCell[getIndexOfClosestCell(contourWeight)])
-       //}
+        /*if (contourCell.size % 200 == 0) {
+            println("${contourWay.last()} | ")
+            println(contourCell[getIndexOfClosestCell(contourWeight)])
+       }*/
     }
 }

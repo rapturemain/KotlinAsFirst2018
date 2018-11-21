@@ -103,26 +103,24 @@ data class Segment(val begin: Point, val end: Point) {
  * Дано множество точек. Вернуть отрезок, соединяющий две наиболее удалённые из них.
  * Если в множестве менее двух точек, бросить IllegalArgumentException
  */
-fun diameter(vararg points: Point): Segment =
-        when {
-            points.size < 2 -> throw IllegalArgumentException()
-            else -> {
-                var p1 = points[0]
-                var p2 = points[1]
-                var max = p1.distance(p2)
-                for (i in 0 until points.size) {
-                    for (j in i + 1 until points.size) {
-                        val buffer = points[i].distance(points[j])
-                        if (buffer > max) {
-                            max = buffer
-                            p1 = points[i]
-                            p2 = points[j]
-                        }
-                    }
-                }
-                Segment(p1, p2)
+fun diameter(vararg points: Point): Segment {
+    if (points.size < 2) throw IllegalArgumentException()
+    var p1 = points[0]
+    var p2 = points[1]
+    var max = p1.distance(p2)
+    for (i in 0 until points.size) {
+        for (j in i + 1 until points.size) {
+            val buffer = points[i].distance(points[j])
+            if (buffer > max) {
+                max = buffer
+                p1 = points[i]
+                p2 = points[j]
             }
         }
+    }
+    return Segment(p1, p2)
+}
+
 
 /**
  * Простая
@@ -154,7 +152,8 @@ class Line private constructor(val b: Double, val angle: Double) {
     fun crossPoint(other: Line): Point {
         val x = (other.b * cos(angle) - b * cos(other.angle)) /
                 (sin(angle) * cos(other.angle) - sin(other.angle) * cos(angle))
-        return if (angle == PI / 2) Point(x, tan(other.angle) * x + other.b / cos(other.angle))
+        return if (abs(PI / 2 - angle) < abs(PI / 2 - other.angle))
+                   Point(x, tan(other.angle) * x + other.b / cos(other.angle))
                else Point(x, tan(angle) * x + b / cos(angle))
     }
 
@@ -200,7 +199,7 @@ fun bisectorByPoints(a: Point, b: Point): Line {
     return Line(middlePoint, angle)
 }
 
-fun checkAngle (angle: Double): Double = if (angle == PI) 0.0 else angle
+fun checkAngle(angle: Double): Double = if (angle >= PI) 0.0 else angle
 
 /**
  * Средняя
@@ -251,8 +250,8 @@ fun circleByThreePoints(a: Point, b: Point, c: Point): Circle = findCircumcircle
 fun middlePoint(p1: Point, p2: Point): Point = Point((p1.x / 2 + p2.x / 2), (p1.y / 2 + p2.y / 2))
 fun middlePoint(p: Segment): Point = middlePoint(p.begin, p.end)
 
-fun halfDist (p1: Point, p2: Point) = p1.distance(p2) / 2
-fun halfDist (p: Segment) = halfDist(p.begin, p.end)
+fun halfDist(p1: Point, p2: Point) = p1.distance(p2) / 2
+fun halfDist(p: Segment) = halfDist(p.begin, p.end)
 
 fun minContainingCircle(vararg points: Point): Circle {
     if (points.isEmpty()) throw IllegalArgumentException()
@@ -262,30 +261,28 @@ fun minContainingCircle(vararg points: Point): Circle {
     for (i in 2 until size) {
         val it = points[i]
         if (!currentCircle.contains(it)) {
-            currentCircle = findSecondEdgePoint(points.take(i), it)
+            currentCircle = findSecondEdgePoint(points.asSequence().take(i), it)
         }
     }
     return currentCircle
 }
 
-fun findSecondEdgePoint(points: List<Point>, firstEdgePoint: Point): Circle {
-    val size = points.size
-    var currentCircle = Circle(middlePoint(points[0], firstEdgePoint), halfDist(points[0], firstEdgePoint))
-    for (i in 1 until size) {
-        val it = points[i]
+fun findSecondEdgePoint(points: Sequence<Point>, firstEdgePoint: Point): Circle {
+    var currentCircle = Circle(middlePoint(points.first(), firstEdgePoint), halfDist(points.first(), firstEdgePoint))
+    var i = 1
+    for (it in points) {
         if (!currentCircle.contains(it)) {
             currentCircle = findThirdEdgePoint(points.take(i), firstEdgePoint, it)
         }
+        i++
     }
     return currentCircle
 }
 
-fun findThirdEdgePoint(points: List<Point>, firstEdgePoint: Point, secondEdgePoint: Point): Circle {
-    val size = points.size
+fun findThirdEdgePoint(points: Sequence<Point>, firstEdgePoint: Point, secondEdgePoint: Point): Circle {
     var currentCircle = Circle(middlePoint(firstEdgePoint, secondEdgePoint), halfDist(firstEdgePoint, secondEdgePoint))
-    for (i in 0 until size) {
-        val it = points[i]
-        if (!currentCircle.contains(points[i])) {
+    for (it in points) {
+        if (!currentCircle.contains(it)) {
             currentCircle = findCircumcircleOfTriangle(firstEdgePoint, secondEdgePoint, it)
         }
     }
