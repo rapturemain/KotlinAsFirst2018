@@ -452,6 +452,12 @@ fun asFar(matrix: Matrix<Int>, rightR: Matrix<Int>, rightL: Matrix<Int>): Double
     if (edgeFirst) removeEdges -= 2
     if (edgeSecond) removeEdges -= 2
     if (edgeThrid) removeEdges -= 2
+   /* for (i in 0 until 4) {
+        if ((matrix[3, 3] == 0) && ((matrix[3, i] == 12) || (matrix[i, 3] == 15))) {
+            removeEdges += 2
+            break
+        }
+    } */
     // if (removeEdges < 0) removeEdges = 0
     return min(asCloseR, asCloseL) + removeEdges
 }
@@ -547,9 +553,9 @@ fun fifteenGameSolution(matrix: Matrix<Int>): List<Int> {
                 contourWeight.add(asFar(bufferMatrix, rightR, rightL))
             }
         }
-        /*if (contourCell.size % 200 == 0) {
+        if (contourCell.size % 200 == 0) {
             println("${contourWay.last()} | ")
             println(contourCell[getIndexOfClosestCell(contourWeight)])
-       }*/
+       }
     }
 }

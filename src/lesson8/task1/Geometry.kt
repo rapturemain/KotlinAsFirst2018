@@ -152,7 +152,7 @@ class Line private constructor(val b: Double, val angle: Double) {
     fun crossPoint(other: Line): Point {
         val x = (other.b * cos(angle) - b * cos(other.angle)) /
                 (sin(angle) * cos(other.angle) - sin(other.angle) * cos(angle))
-        return if (abs(PI / 2 - angle) < abs(PI / 2 - other.angle))
+        return if (angle == PI / 2)
                    Point(x, tan(other.angle) * x + other.b / cos(other.angle))
                else Point(x, tan(angle) * x + b / cos(angle))
     }
@@ -250,7 +250,7 @@ fun circleByThreePoints(a: Point, b: Point, c: Point): Circle = findCircumcircle
 fun middlePoint(p1: Point, p2: Point): Point = Point((p1.x / 2 + p2.x / 2), (p1.y / 2 + p2.y / 2))
 fun middlePoint(p: Segment): Point = middlePoint(p.begin, p.end)
 
-fun halfDist(p1: Point, p2: Point) = p1.distance(p2) / 2
+fun halfDist(p1: Point, p2: Point) = middlePoint(p1, p2).distance(p1)
 fun halfDist(p: Segment) = halfDist(p.begin, p.end)
 
 fun minContainingCircle(vararg points: Point): Circle {
@@ -271,8 +271,10 @@ fun findSecondEdgePoint(points: Sequence<Point>, firstEdgePoint: Point): Circle 
     var currentCircle = Circle(middlePoint(points.first(), firstEdgePoint), halfDist(points.first(), firstEdgePoint))
     var i = 1
     for (it in points) {
-        if (!currentCircle.contains(it)) {
-            currentCircle = findThirdEdgePoint(points.take(i), firstEdgePoint, it)
+        if (i != 1) {
+            if (!currentCircle.contains(it)) {
+                currentCircle = findThirdEdgePoint(points.take(i), firstEdgePoint, it)
+            }
         }
         i++
     }

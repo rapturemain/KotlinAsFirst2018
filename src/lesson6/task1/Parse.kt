@@ -127,7 +127,7 @@ fun isRightString(string: String, allowedChars: List<Char>): Boolean =
 fun flattenPhoneNumber(phone: String): String {
     Regex("""^(\+[\d-+ ]*\d+[\d-+ ]*)?[-+ ]*(\([\d-+ ]*\d+[\d-+ ]*\))?[-()\d+ ]+$""").find(phone) ?: return ""
     val buffer = phone.filter { !" -()+".contains(it) }
-    return if (phone[0] == '+') "+$buffer"
+    return if ((phone[0] == '+') && (Regex("""\d""").matches(buffer[1].toString()))) "+$buffer"
            else buffer
 }
 
