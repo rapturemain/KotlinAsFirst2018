@@ -152,7 +152,7 @@ class Line private constructor(val b: Double, val angle: Double) {
     fun crossPoint(other: Line): Point {
         val x = (other.b * cos(angle) - b * cos(other.angle)) /
                 (sin(angle) * cos(other.angle) - sin(other.angle) * cos(angle))
-        return if (angle == PI / 2)
+        return if (abs(PI / 2 - angle) <= abs(PI / 2 - other.angle))
                    Point(x, tan(other.angle) * x + other.b / cos(other.angle))
                else Point(x, tan(angle) * x + b / cos(angle))
     }
@@ -269,14 +269,13 @@ fun minContainingCircle(vararg points: Point): Circle {
 
 fun findSecondEdgePoint(points: Sequence<Point>, firstEdgePoint: Point): Circle {
     var currentCircle = Circle(middlePoint(points.first(), firstEdgePoint), halfDist(points.first(), firstEdgePoint))
-    var i = 1
+    var i = -1
     for (it in points) {
-        if (i != 1) {
-            if (!currentCircle.contains(it)) {
-                currentCircle = findThirdEdgePoint(points.take(i), firstEdgePoint, it)
-            }
-        }
         i++
+        if (i == 0) continue
+        if (!currentCircle.contains(it)) {
+            currentCircle = findThirdEdgePoint(points.take(i), firstEdgePoint, it)
+        }
     }
     return currentCircle
 }
